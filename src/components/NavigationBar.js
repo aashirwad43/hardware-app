@@ -35,7 +35,7 @@ export const NavigationBar = () => (
 
                         <Dropdown.Menu>
                             <Dropdown.Item href="/profile">Profile</Dropdown.Item>
-                            <Dropdown.Item href="/">Logout</Dropdown.Item>
+                            <Dropdown.Item onClick={ this.props.killSession }>Logout</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </Navbar.Collapse>

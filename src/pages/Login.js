@@ -1,9 +1,8 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { Redirect } from 'react-router-dom';
-// import axios from 'axios';
 import $ from 'jquery';
 
+import { BASE_URL } from '../baseValues';
 
 const formStyle = {
 
@@ -16,12 +15,10 @@ const formStyle = {
 export default class Login extends Component {
     constructor(props){
         super(props)
-        let loggedIn = false
         this.state = {
-            url:'https://satshree.pythonanywhere.com/api/auth/token/login/',
+            url:BASE_URL + '/api/auth/token/login/',
             username:"",
-            password:"",
-            loggedIn
+            password:""
         }
 
 
@@ -71,37 +68,36 @@ export default class Login extends Component {
             error: function(resp) {
                 console.log("err")
                 console.log(resp)
-                window.alert(resp)
+                window.alert(resp.responseJSON.detail)
             }
         })           
     }
 
 
     render() {
-        if(this.state.loggedIn){
-            return <Redirect to="/home" />
-        }
         return(
-            <div className="container-fluid" style={{marginTop: '15vh'}}>
-                <div className="row justify-content-center">
-                    <div className="col-10 col-sm-6 col-md-6">
-                        <div className="form-container" style={formStyle}>
-                            <h3 style={{textAlign: 'center'}}>LOGIN</h3>
-                            <br/>
-                            <form onSubmit={this.submitForm}>
-                                <Form.Group controlId="formBasicUsername">
-                                    <Form.Label>Username</Form.Label>
-                                    <Form.Control type="text" placeholder="Enter Username" name="username" value={ this.state.username } onChange={ this.updateUsername } />
-                                </Form.Group>
-                                <Form.Group controlId="formBasicPassword" >
-                                    <Form.Label>Password</Form.Label>
-                                    <Form.Control type="password" placeholder="Enter Password" name="password" value={ this.state.password }  onChange={ this.updatePassword } />
-                                </Form.Group>
-                                <Button variant="success" type="submit" className="btn-block">
-                                    Login
-                                </Button>
-                            </form>
-                            
+            <div className="vertical-center">
+                <div className="container-fluid">
+                    <div className="row justify-content-center">
+                        <div className="col-10 col-sm-6 col-md-6">
+                            <div className="form-container" style={formStyle}>
+                                <h3 style={{textAlign: 'center'}}>LOGIN</h3>
+                                <br/>
+                                <form onSubmit={this.submitForm}>
+                                    <Form.Group controlId="formBasicUsername">
+                                        <Form.Label>Username</Form.Label>
+                                        <Form.Control type="text" placeholder="Enter Username" name="username" value={ this.state.username } onChange={ this.updateUsername } />
+                                    </Form.Group>
+                                    <Form.Group controlId="formBasicPassword" >
+                                        <Form.Label>Password</Form.Label>
+                                        <Form.Control type="password" placeholder="Enter Password" name="password" value={ this.state.password }  onChange={ this.updatePassword } />
+                                    </Form.Group>
+                                    <Button variant="success" type="submit" className="btn-block">
+                                        Login
+                                    </Button>
+                                </form>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
