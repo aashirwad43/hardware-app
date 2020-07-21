@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
 import { Image, Button, Tooltip, OverlayTrigger, InputGroup, FormControl } from 'react-bootstrap';
-import hardwareRegister from "./hardware-register.PNG";
-import searching from "./searching.png";
+import hardwareRegister from "../assets/image/shardware-register.PNG";
+import searching from "../assets/image/searching.png";
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 

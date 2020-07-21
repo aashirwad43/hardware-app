@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Home from './Home';
-import Login  from './Login';
-import { HardwareList } from './HardwareList';
-import { About } from './About';
-import { Profile } from './Profile';
+import Home from './pages/Home';
+import Login  from './pages/Login';
+import { HardwareList } from './pages/HardwareList';
+import { About } from './pages/About';
+import { Profile } from './pages/Profile';
 import { NoMatch } from './NoMatch';
 import { Layout } from './components/Layout';
 import { NavigationBar } from './components/NavigationBar';
