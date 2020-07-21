@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
-import { Form, Button, form } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { Redirect } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
+import $ from 'jquery';
+
 
 const formStyle = {
 
@@ -16,34 +18,62 @@ export default class Login extends Component {
         super(props)
         let loggedIn = false
         this.state = {
+            url:'https://satshree.pythonanywhere.com/api/auth/token/login/',
+            username:"",
+            password:"",
             loggedIn
         }
 
-        this.onChange = this.onChange.bind(this)
+
         this.submitForm = this.submitForm.bind(this)
     }
 
-    onChange(e){
+    updateUsername = (e) => {
         this.setState({
-            [e.target.name]: e.target.value
+            ...this.state,
+            username: e.target.value
+        })
+    }
+
+    updatePassword = (e) => {
+        this.setState({
+            ...this.state,
+            password: e.target.value
         })
     }
 
     submitForm(e){
         e.preventDefault();
-        axios.request({
-            method:'post',
-            url:'https://satshree.pythonanywhere.com/api/auth/token/login',
-            data: {
-                username: 'this.refs.username.value',
-                password: 'this.refs.password.value'
+
+        let { username } = this.state
+        let { password } = this.state
+
+        let cred = {
+            username,
+            password
+        }
+
+        var component = this
+
+        $.ajax({
+            method:"POST",
+            url:this.state.url,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data:JSON.stringify(cred),
+            dataType:'json',
+            success: function(resp) {
+                // console.log("success")
+                // console.log(resp)
+                component.props.setToken(resp.access, resp.refresh)
+            },
+            error: function(resp) {
+                console.log("err")
+                console.log(resp)
+                window.alert(resp)
             }
-        }).then(response => {
-            // this.props.history.push("/home");
-            this.props.setToken(response.access, response.refresh);
-            console.log(response);
-        }).catch(err => console.log(err));
-           
+        })           
     }
 
 
@@ -61,11 +91,11 @@ export default class Login extends Component {
                             <form onSubmit={this.submitForm}>
                                 <Form.Group controlId="formBasicUsername">
                                     <Form.Label>Username</Form.Label>
-                                    <Form.Control type="text" placeholder="Enter Username" name="username" ref="username" onChange={this.onChange} />
+                                    <Form.Control type="text" placeholder="Enter Username" name="username" value={ this.state.username } onChange={ this.updateUsername } />
                                 </Form.Group>
                                 <Form.Group controlId="formBasicPassword" >
                                     <Form.Label>Password</Form.Label>
-                                    <Form.Control type="password" placeholder="Enter Password" name="password" ref="password" onChange={this.onChange} />
+                                    <Form.Control type="password" placeholder="Enter Password" name="password" value={ this.state.password }  onChange={ this.updatePassword } />
                                 </Form.Group>
                                 <Button variant="success" type="submit" className="btn-block">
                                     Login
