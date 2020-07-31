@@ -1,6 +1,9 @@
 import React, { Component, props } from 'react';
 import { Form, Button, ButtonToolbar, form, Row, Col, Table, Modal, InputGroup, FormControl } from 'react-bootstrap';
 import axios from 'axios';
+import { BASE_URL } from '../baseValues';
+
+import $ from 'jquery';
 
 const formStyle = {
 
@@ -22,41 +25,64 @@ const buttonStyle = {
 export class Profile extends Component {
     constructor(props){
         super(props)
-        this.state= {editModalShow: false}
-        this.state = {changepasswordModalShow: false}
+        
+        this.state = {
+            accessToken:this.props.accessToken,
+            editModalShow: false,
+            changepasswordModalShow: false
+        }
         
     }
 
-    componentWillMount(){
-        var access;
-        axios.request({
-            method:'POST',
-            url:'https://satshree.pythonanywhere.com/api/auth/token/login',
-            data: {
-                username: 'aashirwad',
-                password: 'aashirwad'
+    componentDidMount(){
+        let data = {}
+        let { accessToken } = this.state;
+        $.ajax({
+            method:"GET",
+            url:BASE_URL + "/api/user/",
+            headers:{
+                Authorization: accessToken,
+                'Content-Type': 'application/json'
+            },
+            data,
+            dataType:'json',
+            success: function(resp) {
+                console.log(resp)
             }
-        }).then(response => {
-            // this.props.history.push("/home");
-            access = response.access;
-            console.log(response);
-        }).catch(err => console.log(err));
-        
-        axios.request({
-            method:'GET',
-            url:'https://satshree.pythonanywhere.com/api/user/?username=aashirwad',
-            headers: {
-                Authorization: `Bearer ${access}`
-            }
-            // data: {
-            //     username: 'this.refs.username.value',
-            //     password: 'this.refs.password.value'
-            // }
-        }).then(response => {
-            console.log("response");
-            console.log(response);
-        }).catch(err => console.log(err));
+        });
     }
+
+    
+
+    // componentWillMount(){
+    //     var access;
+    //     axios.request({
+    //         method:'POST',
+    //         url:'https://satshree.pythonanywhere.com/api/auth/token/login',
+    //         data: {
+    //             username: 'aashirwad',
+    //             password: 'aashirwad'
+    //         }
+    //     }).then(response => {
+    //         // this.props.history.push("/home");
+    //         access = response.access;
+    //         console.log(response);
+    //     }).catch(err => console.log(err));
+        
+    //     axios.request({
+    //         method:'GET',
+    //         url:'https://satshree.pythonanywhere.com/api/user/?username=aashirwad',
+    //         headers: {
+    //             Authorization: `Bearer ${access}`
+    //         }
+    //         // data: {
+    //         //     username: 'this.refs.username.value',
+    //         //     password: 'this.refs.password.value'
+    //         // }
+    //     }).then(response => {
+    //         console.log("response");
+    //         console.log(response);
+    //     }).catch(err => console.log(err));
 
 
 

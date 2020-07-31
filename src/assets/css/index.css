@@ -17,3 +17,7 @@ code {
   display: flex;
   align-items: center;
 }
+
+.margin-card {
+  margin-bottom:15px;
+}

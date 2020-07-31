@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
-// import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Provider } from 'react-redux';
+
 import Home from './pages/Home';
 import Login  from './pages/Login';
-import { HardwareList } from './pages/HardwareList';
-import { About } from './pages/About';
-import { Profile } from './pages/Profile';
-import { NoMatch } from './NoMatch';
-import { Layout } from './components/Layout';
-import { NavigationBar } from './components/NavigationBar';
+import About from './pages/About';
+import Profile from './pages/Profile';
+
+import NavigationBar from './components/NavigationBar';
+
+import store from './store';
 
 const defaultState = {
-  authentication:{
-    access:'',
-    refresh:''
-  },
   authenticated:false,
   mode:"home"
 }
@@ -21,36 +18,32 @@ const defaultState = {
 class App extends Component {
   constructor(props){
     super(props)
-    this.state = {
-      authentication:{
-        access:'',
-        refresh:''
-      },
-      authenticated:false,
-      mode:"home"
-    }
+    this.state = defaultState;
   };
 
-  // shouldComponentUpdate(nextProps, nextState){
-  //   console.log("prevent re render", nextProps, nextState)
-  //   return false
-  // }
+  setMode = (mode) => {
+    this.setState({...this.state, mode});
+  }
 
-  setToken = (access, refresh) => {this.setState({authentication:{access:`Bearer ${access}`, refresh}, authenticated:true})};
-  
-  killSession = () => this.setState(defaultState);
+  setAuth = () => this.setState({ ...this.state, authenticated:true });
 
   getComponents() {
     let { mode } = this.state
     let returnComponent;
 
     if (mode === "home") {
-      returnComponent = (<Home creds={ this.state.authentication }/>)
+      returnComponent = (<Home />)
+    }
+    else if (mode === "profile") {
+      returnComponent = (<Profile />)
+    }
+    else if (mode === "about") {
+      returnComponent = (<About />)
     }
 
     return (
       <React.Fragment>
-        <NavigationBar killSession={ this.killSession } />
+        <NavigationBar setMode={ this.setMode }/>
         { returnComponent }
       </React.Fragment>
     )
@@ -58,14 +51,15 @@ class App extends Component {
 
   render () {
     return (
-      <React.Fragment>
-        <Layout>
-          { this.state.authenticated ? this.getComponents() : <Login setToken={this.setToken}/> }
-        </Layout>
-      </React.Fragment>
+      <Provider store={store}>
+        <React.Fragment>
+            { this.state.authenticated ? this.getComponents() : <Login setAuth={this.setAuth}/> }
+        </React.Fragment>
+      </Provider>
     );
   }
   
 }
 
 export default App;
+
