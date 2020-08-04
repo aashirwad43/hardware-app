@@ -1,9 +1,9 @@
 import React, { Component, props } from 'react';
 import { Form, Button, ButtonToolbar, form, Row, Col, Table, Modal, InputGroup, FormControl } from 'react-bootstrap';
-import axios from 'axios';
+import { connect } from 'react-redux';
 import { BASE_URL } from '../baseValues';
-
 import $ from 'jquery';
+import swal from 'sweetalert';
 
 const formStyle = {
 
@@ -27,16 +27,25 @@ export class Profile extends Component {
         super(props)
         
         this.state = {
-            accessToken:this.props.accessToken,
             editModalShow: false,
-            changepasswordModalShow: false
+            changepasswordModalShow: false,
+            accessToken: this.props.access,
+            userInfo: [],
         }
         
     }
 
     componentDidMount(){
-        let data = {}
-        let { accessToken } = this.state;
+        let { userInfo, accessToken } = this.state;
+
+        let username = this.props.username;
+
+        let data = JSON.stringify({
+            username: username
+        });
+
+        var component = this;
+        
         $.ajax({
             method:"GET",
             url:BASE_URL + "/api/user/",
@@ -47,42 +56,20 @@ export class Profile extends Component {
             data,
             dataType:'json',
             success: function(resp) {
-                console.log(resp)
+                component.setState({...component.state, userInfo:resp.results});
+            },
+            error: function(resp) {
+                console.log(data);
+                console.log(resp);
+                swal({
+                    title:"Something went wrong.",
+                    text:"Please try again.",
+                    icon:"warning"
+                });
             }
         });
     }
 
-    
-
-    // componentWillMount(){
-    //     var access;
-    //     axios.request({
-    //         method:'POST',
-    //         url:'https://satshree.pythonanywhere.com/api/auth/token/login',
-    //         data: {
-    //             username: 'aashirwad',
-    //             password: 'aashirwad'
-    //         }
-    //     }).then(response => {
-    //         // this.props.history.push("/home");
-    //         access = response.access;
-    //         console.log(response);
-    //     }).catch(err => console.log(err));
-        
-    //     axios.request({
-    //         method:'GET',
-    //         url:'https://satshree.pythonanywhere.com/api/user/?username=aashirwad',
-    //         headers: {
-    //             Authorization: `Bearer ${access}`
-    //         }
-    //         // data: {
-    //         //     username: 'this.refs.username.value',
-    //         //     password: 'this.refs.password.value'
-    //         // }
-    //     }).then(response => {
-    //         console.log("response");
-    //         console.log(response);
-    //     }).catch(err => console.log(err));
 
 
 
@@ -269,7 +256,14 @@ export class Profile extends Component {
     }
 }
 
-export default Profile
+const mapStateToProps = state => ({
+    access: state.credentials.tokens.accessToken,
+    username:state.credentials.user.username
+})
+
+
+
+export default connect(mapStateToProps, {}) (Profile);
 
    
 

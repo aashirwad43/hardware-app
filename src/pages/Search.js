@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, InputGroup, Form, Card, Table } from 'react-bootstrap';
+import { Button, InputGroup, Form, Card, Table, ButtonToolbar, Modal, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
@@ -36,10 +36,18 @@ const buttonContainer = {
     justifyContent: 'center',
 }
 
+const buttonStyle = {
+
+    display: 'flex',
+    justifyContent: 'center'
+
+};
+
 export class Search extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            editModalShow: false,
             productionNumber: "",
             accessToken: this.props.access,
             searchDeviceList: []
@@ -53,7 +61,7 @@ export class Search extends Component {
     getHardware = (e) => {
         e.preventDefault();
 
-        let { searchDeviceList, accessToken, productionNumber } = this.state;
+        let { accessToken, productionNumber } = this.state;
 
         let data = JSON.stringify({
             search: productionNumber
@@ -86,7 +94,111 @@ export class Search extends Component {
 
     }
 
-    getCardOrTable = () => {
+    newProductionNumber = (e) => {
+        let {searchDeviceList} = this.state;
+        searchDeviceList.production_number = e.target.value
+        this.setState({ ...this.state, searchDeviceList});
+    }
+
+    updateHardwareInfo = (e) => {
+        e.preventDefault();
+
+        let { searchDeviceList, accessToken } = this.state;
+
+        let productionNumber = searchDeviceList.production_number;
+
+        let device_id = searchDeviceList.device_id;
+
+        if(productionNumber) {
+            let data = JSON.stringify({
+                production_number: productionNumber
+            });
+
+            $.ajax({
+                method: "PUT",
+                url: BASE_URL + `/api/hardware/${device_id}`,
+                headers:  {
+                    Authorization: accessToken,
+                    'Content-Type': 'application/json'
+                },
+                data,
+                dataType: 'json',
+                success: (resp) => {
+                    swal({
+                        title: "Hardware Info Updated Successfully.",
+                        icon: "success"
+                    })
+                    // .then(() => this.setState({ ...this.state, productionNumber: ''}));
+                },
+                error: (resp) => {
+                    console.log(resp);
+                    swal({
+                        title: "Something went wrong.",
+                        text: "Please try again",
+                        icon: "warning"
+                    })
+                    // <Card.Img src={searching} style={{ height: '289px', width: '400px' }} />
+                }
+            });
+        }else{
+            swal({
+                title: "Please Enter New Production Number.",
+                icon: "warning"
+            })
+        }
+    }
+
+    deleteHardware = (e) => {
+        e.preventDefault();
+
+        let {searchDeviceList, accessToken} = this.state;
+
+        let device_id = searchDeviceList.device_id;
+
+        let username = this.props.username;
+
+        let userName = searchDeviceList.registered_by.username;
+
+        if(username === userName){
+            $.ajax({
+                method: "DELETE",
+                url: BASE_URL + `/api/hardware/${device_id}`,
+                    headers:  {
+                        Authorization: accessToken,
+                        'Content-Type': 'application/json'
+                },
+                success: (resp) => {
+                    swal({
+                        title: "Hardware Deleted Successfully.",
+                        icon: "success"
+                    }).then(() => this.setState({...this.state, searchDeviceList:[], productionNumber:''}));
+                },
+                error: (resp) => {
+                    console.log(resp);
+                    swal({
+                        title: "Something went wrong.",
+                        text: "Please try again",
+                        icon: "warning"
+                    })
+    
+                }
+    
+    
+    
+            });
+        }
+        else{
+            swal({
+                title:"Authorzation Error.",
+                text:"Cannot delete hardware registered by other user.",
+                icon:"warning"
+            })
+        }
+
+        
+    }
+
+    getImageOrTable = () => {
         let { searchDeviceList } = this.state;
         let dataExists;
 
@@ -105,7 +217,7 @@ export class Search extends Component {
         } else {
             return (
                 <React.Fragment>
-                    <Table responsive>
+                    <Table responsive >
                         <tbody>
                             <tr>
                                 <td>Device Id</td>
@@ -125,6 +237,47 @@ export class Search extends Component {
                             </tr>
                         </tbody>
                     </Table>
+                    <div style={buttonStyle}>
+                        <ButtonToolbar>
+                            <Button variant="primary"  onClick={() => this.setState({editModalShow:true})}> Edit</Button>
+                            <Button variant="danger" style={{marginLeft: '5px'}} onClick={this.deleteHardware}>Delete</Button>
+                            <Modal
+                                aria-labelledby="contained-modal-title-vcenter"
+                                centered
+                                show={this.state.editModalShow}
+                            >
+                                <Form onSubmit={this.updateHardwareInfo}>
+                                    <Modal.Header closeButton onClick={() => this.setState({editModalShow:false})}>
+                                        <Modal.Title id="contained-modal-title-vcenter">
+                                            Edit Hardware Info
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <div>
+                                            <InputGroup className="mb-3">
+                                                <InputGroup.Prepend>
+                                                    <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
+                                                </InputGroup.Prepend>
+                                                <FormControl
+                                                    placeholder="Enter Production Number"
+                                                    aria-label="Production Number"
+                                                    aria-describedby="basic-addon1"
+                                                    required
+                                                    type="number"
+                                                    value = {this.state.searchDeviceList.production_number}
+                                                    onChange = {this.newProductionNumber}
+                                                />
+                                            </InputGroup> 
+                                        </div>
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button variant="danger" onClick={() => this.setState({editModalShow:false})}>Close</Button>
+                                        <Button variant="success" onClick={() => this.setState({editModalShow:false})} type="submit">Save Changes</Button>
+                                    </Modal.Footer>
+                                </Form>
+                            </Modal>
+                        </ButtonToolbar>
+                    </div>    
                 </React.Fragment>
             )
         }
@@ -137,7 +290,7 @@ export class Search extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <h3 style={{ textAlign: 'center' }}>Search Hardware</h3>
+                    <a onClick={ () => {this.setState({ searchDeviceList:[], productionNumber: "" }) } }><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
                     <br />
                     <Form onSubmit={this.getHardware}>
                         <InputGroup className="mb-3">
@@ -148,14 +301,15 @@ export class Search extends Component {
                                 type="number"
                                 onChange={this.updateProductNumber}
                                 value={this.state.productionNumber}
+                                required
                             />
                             <InputGroup.Prepend>
                                 <Button variant="success" type="submit">Search</Button>
                             </InputGroup.Prepend>
                         </InputGroup>
                     </Form>
-                    <br />
-                    {this.getCardOrTable()}
+                    <br/>
+                    {this.getImageOrTable()}
                 </Card>
             </React.Fragment>
         )
@@ -163,6 +317,7 @@ export class Search extends Component {
 }
 
 const mapStateToProps = state => ({
+    username:state.credentials.user.username,
     access: state.credentials.tokens.accessToken
 })
 
