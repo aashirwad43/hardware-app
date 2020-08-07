@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar, Container, Dropdown } from 'react-bootstrap';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 import styled from 'styled-components';
 import { Component } from 'react';
@@ -14,14 +14,21 @@ const Styles = styled.div`
         }
 
        
-    }
-
-    
+    }   
 `;
+
+const localUsername = () => {
+    let local = JSON.parse(localStorage.getItem('state'));
+    return local.credentials.user.username;
+}
 
 class NavigationBar extends Component {
     constructor(props){
         super(props)
+
+        this.state = {
+            username:localUsername()
+        }
     }
 
     killSession = () => {
@@ -40,7 +47,7 @@ class NavigationBar extends Component {
                             <div style={{position:'absolute', right:'15rem'}}>
                                 <Dropdown >
                                     <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                                        { this.props.username }
+                                        { this.state.username }
                                     </Dropdown.Toggle>
 
                                     <Dropdown.Menu>
@@ -59,8 +66,9 @@ class NavigationBar extends Component {
     }
 }
 
-const mapStateToProps = state => ({
-    username:state.credentials.user.username
-})
+// const mapStateToProps = state => ({
+//     username:state.credentials.user.username
+// })
 
-export default connect(mapStateToProps, {})(NavigationBar);
+// export default connect(mapStateToProps, {})(NavigationBar);
+export default NavigationBar;

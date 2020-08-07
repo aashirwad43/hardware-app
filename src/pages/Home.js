@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
+import swal from 'sweetalert';
 import $ from 'jquery';
 
 import { setAuthCred } from '../actions';
@@ -10,22 +11,67 @@ import Search from './Search';
 import { BASE_URL } from '../baseValues';
 
 class Home extends Component {
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            reduxValue:this.props.reduxValue
+        }
+    }
+
+    componentDidMount() {
+        this.getUserID()
+    }
+
     refreshToken = () => {
-        let reduxValue = this.props.reduxValue;
+        let { reduxValue } = this.state;
 
         setInterval(() => {
             $.ajax({
                 method: "POST",
                 url: BASE_URL + "/api/auth/token/refresh",
                 data: {
-                    refresh: reduxValue.credentials.tokens.refreshToken
+                    refresh: reduxValue.tokens.refreshToken
                 },
                 success: (resp) => {
-                    reduxValue.credentials.tokens.accessToken = `Bearer ${resp.access}`;
+                    reduxValue.tokens.accessToken = `Bearer ${resp.access}`;
                     this.props.setAuthCred(reduxValue);
                 }
             })
         }, 600000);
+    }
+
+    getUserID = () => {
+        var { reduxValue } = this.state;
+        let { accessToken } = reduxValue.tokens;
+        let { username } = reduxValue.user;
+
+        let data = {
+            username: username
+        };
+
+        $.ajax({
+            method: "GET",
+            url: BASE_URL + "/api/user/",
+            headers: {
+                Authorization: accessToken,
+                'Content-Type': 'application/json'
+            },
+            data,
+            dataType: 'json',
+            success: (resp) => {
+                reduxValue.user.id = resp.results.id
+                this.props.setAuthCred(reduxValue);
+            },
+            error: function (resp) {
+                console.log(resp);
+                swal({
+                    title: "Unable to update your user data.",
+                    // text: "Please try again.",
+                    icon: "warning"
+                });
+            }
+        });
     }
 
     render() {
@@ -47,7 +93,7 @@ class Home extends Component {
 }
 
 const mapStateToProps = state => ({
-    reduxValue:state
+    reduxValue:state.credentials
 })
 
 export default connect(mapStateToProps, { setAuthCred })(Home);

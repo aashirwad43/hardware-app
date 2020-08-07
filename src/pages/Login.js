@@ -29,13 +29,13 @@ class Login extends Component {
             auth: {
                 user: {
                     username: this.props.credentials.username,
-                    password: this.props.credentials.password
                 },
                 tokens: {
                     accessToken: this.props.tokens.accessToken,
                     refreshToken: this.props.tokens.refreshToken
                 }
-            }
+            },
+            password: ""
         }
 
 
@@ -61,12 +61,12 @@ class Login extends Component {
     }
 
     updatePassword = (e) => {
-        let { auth } = this.state;
-        auth.user.password = e.target.value;
+        let { password } = this.state;
+        password = e.target.value;
 
         this.setState({
             ...this.state,
-            auth
+            password
         });
     }
 
@@ -74,12 +74,12 @@ class Login extends Component {
         e.preventDefault();
 
         let { username } = this.state.auth.user;
-        let { password } = this.state.auth.user;
+        let { password } = this.state;
 
-        let cred = {
+        let data = JSON.stringify({
             username,
             password
-        }
+        })
 
         var component = this
 
@@ -89,7 +89,7 @@ class Login extends Component {
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify(cred),
+            data,
             dataType: 'json',
             success: function (resp) {
                 let { auth } = component.state;
@@ -97,24 +97,21 @@ class Login extends Component {
                     accessToken: `Bearer ${resp.access}`,
                     refreshToken: resp.refresh
                 }
-                component.setState({
-                    ...component.state,
-                    auth
-                }, () => {
-                    component.props.setAuthCred(component.state.auth);
-                    component.props.setAuth();
-                });
+
+                component.props.setAuthCred(component.state.auth);
+                component.props.setAuth();
             },
             error: function (resp) {
                 console.log(resp)
                 swal({
-                    title:"Authentication failed",
-                    icon:"error"
+                    title: "Authentication failed",
+                    icon: "error"
                 });
             }
         })
     }
 
+    
 
     render() {
         return (

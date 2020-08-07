@@ -3,8 +3,8 @@ import { SET_AUTH } from '../actions/types';
 
 export const defaultCredState = {
     user:{
-        username:"",
-        password:""
+        id:"",
+        username:""
     },
     tokens:{
         accessToken:"",
@@ -15,6 +15,7 @@ export const defaultCredState = {
 function credReducer(state = defaultCredState, action) {
     switch (action.type) {
         case SET_AUTH:
+            console.log(action.cred)
             return action.cred;
         default:
             return state;
