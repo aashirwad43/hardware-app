@@ -121,6 +121,10 @@ export class Search extends Component {
 
     }
 
+    getPagination = (e) => {
+
+    }
+
     getDeviceIndexFromState = (deviceID) => {
         let { searchDeviceList } = this.state;
 
@@ -375,6 +379,8 @@ export class Search extends Component {
                                     </tr>    
                                 ))}
                             </tbody>
+                            <Button variant={}>Next</Button>
+                            <Button>Next</Button>
                         </Table>
                     </React.Fragment>    
                 )
