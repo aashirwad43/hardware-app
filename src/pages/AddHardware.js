@@ -102,6 +102,71 @@ export class AddHardware extends Component {
         }
     }
 
+    verfiyDevice = (e) => {
+        e.preventDefault();
+
+        let { prodNumber, accessToken } = this.state
+
+        if (prodNumber) {
+            let data = JSON.stringify({
+                production_number: prodNumber
+            });
+
+            $.ajax({
+                method: "POST",
+                url: BASE_URL + "/api/hardware/verify/device/",
+                headers: {
+                    Authorization: accessToken,
+                    'Content-Type': 'application/json'
+                },
+                xhr: function () {
+                    let xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function () {
+                        swal({
+                            icon:loading
+                        });
+                    }, false);
+
+                    return xhr;
+                },
+                data,
+                dataType: 'json',
+                success: (resp) => {
+                    if (resp.status === true){
+                        swal({
+                            title: "Device exists .",
+                            icon: "success"
+                        }).then(() => this.setState({ ...this.state, prodNumber: '' }));
+                    }
+                    
+                },
+                error: (resp) => {
+                    console.log(resp);
+                    if (resp.status === 404){
+                        swal({
+                            title: "Device doesnot exist.",
+                            icon: "warning"
+                        }).then(() => this.setState({ ...this.state, prodNumber: '' }));
+                    }
+                    else {
+                        swal({
+                            title: "Something went wrong.",
+                            text: "Please try again",
+                            icon: "warning"
+                        })
+                    }
+                    
+                }
+            });
+        } else {
+            swal({
+                title: "Please Enter Production Number.",
+                icon: "warning"
+            })
+        }
+
+    }
+
     render() {
         return (
             <React.Fragment>
@@ -110,7 +175,7 @@ export class AddHardware extends Component {
                     <br />
                     <Card.Img src={hardwareRegister} style={photoStyle} />
                     <br />
-                    <Form onSubmit={this.registerHardware}>
+                    <Form onSubmit={this.registerHardware} >
                         <InputGroup className="mb-3">
                             <InputGroup.Prepend>
                                 <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
@@ -124,7 +189,8 @@ export class AddHardware extends Component {
                             />
                         </InputGroup>
                         <div className="container" style={buttonContainer}>
-                            <Button variant="success" type="submit" >Register Now</Button>
+                            <Button variant="success" type="submit"  >Register Now</Button>
+                            <Button variant="success" style={{marginLeft: "10px"}} type="submit" onClick={this.verfiyDevice} >Verify Device</Button>
                         </div>
                     </Form>
                 </Card>

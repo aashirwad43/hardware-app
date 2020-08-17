@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, InputGroup, Form, Card, Table, ButtonToolbar, Modal, FormControl } from 'react-bootstrap';
+import { Button, InputGroup, Form, Card, Table, ButtonToolbar, Modal, FormControl, Dropdown } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
@@ -48,23 +48,33 @@ export class Search extends Component {
         super(props)
         this.state = {
             editModalShow: false,
+            moreInfoModalShow: false,
+            selectedMore: '',
             productionNumber: "",
+            registeredDate: "",
             accessToken: this.props.access,
-            searchDeviceList: []
+            searchDeviceList: [],
+            searchOption: 'productionNumber'
         }
+
     }
 
     updateProductNumber = (e) => {
         this.setState({ ...this.state, productionNumber: e.target.value })
     }
 
+    updateRegisteredDate = (e) => {
+        this.setState({ ...this.state, registeredDate: e.target.value })
+    }
+
     getHardware = (e) => {
         e.preventDefault();
 
-        let { accessToken, productionNumber } = this.state;
+        let { accessToken, productionNumber, registeredDate } = this.state;
 
         let data = {
-            search: productionNumber
+            search: productionNumber,
+            registered: registeredDate,
         };
 
         var component = this;
@@ -83,7 +93,7 @@ export class Search extends Component {
             },
             error: function (resp) {
                 console.log(resp)
-                if (resp.status === 404) {
+                if (resp.status === 404 ) {
                     swal({
                         title: "Device Not Found.",
                         icon: "warning"
@@ -105,6 +115,11 @@ export class Search extends Component {
         searchDeviceList.production_number = e.target.value
         this.setState({ ...this.state, searchDeviceList });
     }
+
+    // newProductionNumberFromDetail = (e) => {
+    //     let {  } = this.state;
+
+    // }
 
     updateHardwareInfo = (e) => {
         e.preventDefault();
@@ -152,16 +167,16 @@ export class Search extends Component {
             });
         } else {
             let title = "";
-            if (searchDeviceList.registered_by.id === this.props.userID) {
+            if (searchDeviceList.registered_by.id !== this.props.userID) {
                 title = "You cannot update information of device registered by other registrars!"
+                
             } else {
                 title = "Please Enter New Production Number."
-
             }
             swal({
                 title,
                 icon: "warning"
-            })
+            }).then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: ''}));
         }
     }
 
@@ -172,13 +187,13 @@ export class Search extends Component {
 
         let device_id = searchDeviceList.device_id;
 
-        
+
         if (searchDeviceList.registered_by.id === this.props.userID) {
             swal({
-                title:"Are You Sure You Want To Delete This Device?",
-                icon:"warning",
-                dangerMode:true,
-                buttons:{
+                title: "Are You Sure You Want To Delete This Device?",
+                icon: "warning",
+                dangerMode: true,
+                buttons: {
                     cancel: {
                         visible: true,
                         value: false,
@@ -191,32 +206,32 @@ export class Search extends Component {
                     }
                 }
             })
-           .then(val => {
-               if (val) {
-                   $.ajax({
-                       method: "DELETE",
-                       url: BASE_URL + `/api/hardware/${device_id}`,
-                       headers: {
-                           Authorization: accessToken,
-                           'Content-Type': 'application/json'
-                       },
-                       success: (resp) => {
-                           swal({
-                               title: "Hardware Deleted Successfully.",
-                               icon: "success"
-                           }).then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: '' }));
-                       },
-                       error: (resp) => {
-                           console.log(resp);
-                           swal({
-                               title: "Something went wrong.",
-                               text: "Please try again",
-                               icon: "warning"
-                           })
-                       }
-                   });
-               }
-           }) 
+                .then(val => {
+                    if (val) {
+                        $.ajax({
+                            method: "DELETE",
+                            url: BASE_URL + `/api/hardware/${device_id}`,
+                            headers: {
+                                Authorization: accessToken,
+                                'Content-Type': 'application/json'
+                            },
+                            success: (resp) => {
+                                swal({
+                                    title: "Hardware Deleted Successfully.",
+                                    icon: "success"
+                                }).then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: '' }));
+                            },
+                            error: (resp) => {
+                                console.log(resp);
+                                swal({
+                                    title: "Something went wrong.",
+                                    text: "Please try again",
+                                    icon: "warning"
+                                })
+                            }
+                        });
+                    }
+                })
 
         }
         else {
@@ -228,9 +243,15 @@ export class Search extends Component {
         }
     }
 
+    
+
     getImageOrTable = () => {
-        let { searchDeviceList } = this.state;
+        let { searchDeviceList, selectedMore } = this.state;
         let dataExists;
+
+        const filteredDetailInfo = searchDeviceList.filter((item) => {
+            return item.device_id === selectedMore
+        })
 
         if (Array.isArray(searchDeviceList)) {
             dataExists = searchDeviceList.length === 0;
@@ -245,69 +266,209 @@ export class Search extends Component {
                 </React.Fragment>
             )
         } else {
+            if (this.state.searchOption === "productionNumber"){
+                return (
+                    <React.Fragment>
+                        <Table responsive >
+                            <tbody>
+                                <tr>
+                                    <td>Device Id</td>
+                                    <td>{this.state.searchDeviceList.device_id}</td>
+                                </tr>
+                                <tr>
+                                    <td>Production Number</td>
+                                    <td>{this.state.searchDeviceList.production_number}</td>
+                                </tr>
+                                <tr>
+                                    <td>Registered By</td>
+                                    <td>{this.state.searchDeviceList.registered_by.username}</td>
+                                </tr>
+                                <tr>
+                                    <td>Registered On</td>
+                                    <td>{this.state.searchDeviceList.registered_on}</td>
+                                </tr>
+                            </tbody>
+                        </Table>
+                        <div style={buttonStyle}>
+                            <ButtonToolbar>
+                                <Button variant="primary" onClick={() => this.setState({ editModalShow: true })}> Edit</Button>
+                                <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
+                                <Modal
+                                    aria-labelledby="contained-modal-title-vcenter"
+                                    centered
+                                    show={this.state.editModalShow}
+                                >
+                                    <Form onSubmit={this.updateHardwareInfo}>
+                                        <Modal.Header closeButton onClick={() => this.setState({ editModalShow: false })}>
+                                            <Modal.Title id="contained-modal-title-vcenter">
+                                                Edit Hardware Info
+                                            </Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            <div>
+                                                <InputGroup className="mb-3">
+                                                    <InputGroup.Prepend>
+                                                        <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
+                                                    </InputGroup.Prepend>
+                                                    <FormControl
+                                                        placeholder="Enter Production Number"
+                                                        aria-label="Production Number"
+                                                        aria-describedby="basic-addon1"
+                                                        required
+                                                        type="number"
+                                                        value={this.state.searchDeviceList.production_number}
+                                                        onChange={this.newProductionNumber}
+                                                    />
+                                                </InputGroup>
+                                            </div>
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="danger" onClick={() => this.setState({ editModalShow: false })}>Close</Button>
+                                            <Button variant="success" onClick={() => this.setState({ editModalShow: false })} type="submit">Save Changes</Button>
+                                        </Modal.Footer>
+                                    </Form>
+                                </Modal>
+                            </ButtonToolbar>
+                        </div>
+                    </React.Fragment>
+                )
+            }
+            else if (this.state.searchOption === "registeredDate") {
+                return(
+                    <React.Fragment>
+                        <Table responsive >
+                            <tbody>
+                                <tr>
+                                    <th>Production Number</th>
+                                    <th>Registered Date</th>
+                                    <th></th>
+                                </tr>
+                                {this.state.searchDeviceList.map(searchDeviceList => (
+                                    <tr key={searchDeviceList.device_id}>
+                                        <td>{searchDeviceList.production_number}</td>
+                                        <td>{searchDeviceList.registered_on}</td>
+                                        <td> <Button variant="primary" onClick={() => this.setState({ moreInfoModalShow: true, selectedMore: searchDeviceList.device_id })}>More</Button></td>
+                                        <Modal
+                                        aria-labelledby="contained-modal-title-vcenter"
+                                        centered
+                                        show={this.state.moreInfoModalShow}
+                                        >
+                                            <Card>
+                                                <Modal.Header closeButton onClick={() => this.setState({ moreInfoModalShow: false })}>
+                                                    <Modal.Title id="contained-modal-title-vcenter">
+                                                        Detail Info
+                                                    </Modal.Title>
+                                                </Modal.Header>
+                                                <Modal.Body>
+                                                    <div>
+                                                        <Table responsive >
+                                                            <tbody>
+                                                                {filteredDetailInfo.map(filteredDetailInfo => (
+                                                                    <React.Fragment>
+                                                                        <tr>
+                                                                            <td>Device Id</td>
+                                                                            <td>{filteredDetailInfo.device_id}</td>    
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Production Number</td>
+                                                                            <td>{filteredDetailInfo.production_number}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Registered By</td>
+                                                                            <td>{filteredDetailInfo.registered_by.username}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Registered On</td>
+                                                                            <td>{filteredDetailInfo.registered_on}</td>
+                                                                        </tr>   
+                                                                    </React.Fragment> 
+                                                                ))}     
+                                                            </tbody>
+                                                        </Table>
+                                                    </div>
+                                                </Modal.Body>
+                                                <Modal.Footer>
+                                                    {/* <Button variant="primary" onClick={() => this.setState({ editModalShow: true })} type="submit">Edit</Button> */}
+                                                    <Button variant="danger" onClick={() => this.setState({ moreInfoModalShow: false })}>Close</Button>
+                                                    <Modal
+                                                        aria-labelledby="contained-modal-title-vcenter"
+                                                        centered
+                                                        show={this.state.editModalShow}
+                                                    >
+                                                        <Form onSubmit={this.updateHardwareInfo}>
+                                                            <Modal.Header closeButton onClick={() => this.setState({ editModalShow: false })}>
+                                                                <Modal.Title id="contained-modal-title-vcenter">
+                                                                    Edit Hardware Info
+                                                                </Modal.Title>
+                                                            </Modal.Header>
+                                                            <Modal.Body>
+                                                                <div>
+                                                                    <InputGroup className="mb-3">
+                                                                        <InputGroup.Prepend>
+                                                                            <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
+                                                                        </InputGroup.Prepend>
+                                                                        <FormControl
+                                                                            placeholder="Enter Production Number"
+                                                                            aria-label="Production Number"
+                                                                            aria-describedby="basic-addon1"
+                                                                            required
+                                                                            type="number"
+                                                                            value={filteredDetailInfo.map(filteredDetailInfo => (
+                                                                                filteredDetailInfo.production_number
+                                                                            ))}
+                                                                            onChange={this.newProductionNumberFromDetail}
+                                                                        />
+                                                                    </InputGroup>
+                                                                </div>
+                                                            </Modal.Body>
+                                                            <Modal.Footer>
+                                                                <Button variant="danger" onClick={() => this.setState({ editModalShow: false })}>Close</Button>
+                                                                <Button variant="success" onClick={() => this.setState({ editModalShow: false })} type="submit">Save Changes</Button>
+                                                            </Modal.Footer>
+                                                        </Form>
+                                                    </Modal>
+                                                </Modal.Footer>
+                                            </Card>
+                                        </Modal>
+                                    </tr>    
+                                ))}
+                            </tbody>
+                        </Table>
+                    </React.Fragment>    
+                )
+            }
+            
+        }
+    }
+
+    getSearchField = () => {
+        let { searchOption } = this.state;
+
+        if (searchOption === "productionNumber") {
             return (
                 <React.Fragment>
-                    <Table responsive >
-                        <tbody>
-                            <tr>
-                                <td>Device Id</td>
-                                <td>{this.state.searchDeviceList.device_id}</td>
-                            </tr>
-                            <tr>
-                                <td>Production Number</td>
-                                <td>{this.state.searchDeviceList.production_number}</td>
-                            </tr>
-                            <tr>
-                                <td>Registered By</td>
-                                <td>{this.state.searchDeviceList.registered_by.username}</td>
-                            </tr>
-                            <tr>
-                                <td>Registered On</td>
-                                <td>{this.state.searchDeviceList.registered_on}</td>
-                            </tr>
-                        </tbody>
-                    </Table>
-                    <div style={buttonStyle}>
-                        <ButtonToolbar>
-                            <Button variant="primary" onClick={() => this.setState({ editModalShow: true })}> Edit</Button>
-                            <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
-                            <Modal
-                                aria-labelledby="contained-modal-title-vcenter"
-                                centered
-                                show={this.state.editModalShow}
-                            >
-                                <Form onSubmit={this.updateHardwareInfo}>
-                                    <Modal.Header closeButton onClick={() => this.setState({ editModalShow: false })}>
-                                        <Modal.Title id="contained-modal-title-vcenter">
-                                            Edit Hardware Info
-                                        </Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
-                                        <div>
-                                            <InputGroup className="mb-3">
-                                                <InputGroup.Prepend>
-                                                    <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
-                                                </InputGroup.Prepend>
-                                                <FormControl
-                                                    placeholder="Enter Production Number"
-                                                    aria-label="Production Number"
-                                                    aria-describedby="basic-addon1"
-                                                    required
-                                                    type="number"
-                                                    value={this.state.searchDeviceList.production_number}
-                                                    onChange={this.newProductionNumber}
-                                                />
-                                            </InputGroup>
-                                        </div>
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                        <Button variant="danger" onClick={() => this.setState({ editModalShow: false })}>Close</Button>
-                                        <Button variant="success" onClick={() => this.setState({ editModalShow: false })} type="submit">Save Changes</Button>
-                                    </Modal.Footer>
-                                </Form>
-                            </Modal>
-                        </ButtonToolbar>
-                    </div>
+                    <Form.Control
+                        placeholder="Production number"
+                        aria-label="Production Number"
+                        aria-describedby="basic-addon1"
+                        type="number"
+                        onChange={this.updateProductNumber}
+                        value={this.state.productionNumber}
+                        required
+                    />
+                </React.Fragment>
+            )
+        } else if (searchOption === "registeredDate") {
+            return (
+                <React.Fragment>
+                    <Form.Control
+                        placeholder="Registered Date"
+                        aria-label="Registered Date"
+                        aria-describedby="basic-addon1"
+                        type="date"
+                        onChange={this.updateRegisteredDate}
+                        value={this.state.registeredDate}
+                        required />
                 </React.Fragment>
             )
         }
@@ -320,22 +481,25 @@ export class Search extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <a onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "" }) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
+                    <a onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "" }) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
                     <br />
                     <Form onSubmit={this.getHardware}>
                         <InputGroup className="mb-3">
-                            <Form.Control
-                                placeholder="Production number"
-                                aria-label="Production Number"
-                                aria-describedby="basic-addon1"
-                                type="number"
-                                onChange={this.updateProductNumber}
-                                value={this.state.productionNumber}
-                                required
-                            />
                             <InputGroup.Prepend>
-                                <Button variant="success" type="submit">Search</Button>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                        Search By
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"productionNumber", searchDeviceList:[], productionNumber: ""}) }>Production Number</Dropdown.Item>
+                                        <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"registeredDate", searchDeviceList:[], registeredDate: ""}) }>Registered Date</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
                             </InputGroup.Prepend>
+                            { this.getSearchField() }
+                            <InputGroup.Append>
+                                <Button variant="success" type="submit">Search</Button>
+                            </InputGroup.Append>
                         </InputGroup>
                     </Form>
                     <br />

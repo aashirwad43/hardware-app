@@ -83,10 +83,13 @@ class Login extends Component {
 
         var component = this
 
+        const hashedAppKey = "6117160db3031c067ae97f06a216ebb4c64f9a978956e63c75f19c824f8b59e8a92c038d2ec9e5b5c1d6ee023212b6f26a8ceb07954cec05e902d278a7b6cf1a";
+
         $.ajax({
             method: "POST",
             url: this.state.url,
             headers: {
+                app: hashedAppKey,
                 'Content-Type': 'application/json'
             },
             data,
