@@ -54,7 +54,12 @@ export class Search extends Component {
             registeredDate: "",
             accessToken: this.props.access,
             searchDeviceList: [],
-            searchOption: 'productionNumber'
+            activeDeviceIndex: 0,
+            searchOption: 'productionNumber',
+            pagination: {
+                next: '',
+                previous: ''
+            }
         }
 
     }
@@ -72,10 +77,16 @@ export class Search extends Component {
 
         let { accessToken, productionNumber, registeredDate } = this.state;
 
-        let data = {
-            search: productionNumber,
-            registered: registeredDate,
-        };
+        var { searchOption } = this.state;
+
+        let data;
+
+        if (searchOption === 'productionNumber') {
+            data = {search: productionNumber}
+        }
+        else {
+            data = {registered: registeredDate}
+        }
 
         var component = this;
 
@@ -89,7 +100,7 @@ export class Search extends Component {
             data,
             dataType: 'json',
             success: function (resp) {
-                component.setState({ ...component.state, searchDeviceList: resp.results });
+                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: { next: resp.next, previous: resp.previous } });
             },
             error: function (resp) {
                 console.log(resp)
@@ -110,9 +121,21 @@ export class Search extends Component {
 
     }
 
+    getDeviceIndexFromState = (deviceID) => {
+        let { searchDeviceList } = this.state;
+
+    
+        let returnDevice = searchDeviceList.filter(device => {
+            return device.device_id === deviceID;
+            
+        });
+        
+        return searchDeviceList.indexOf(returnDevice[0]);
+    }
+
     newProductionNumber = (e) => {
         let { searchDeviceList } = this.state;
-        searchDeviceList.production_number = e.target.value
+        searchDeviceList[this.state.activeDeviceIndex].production_number = e.target.value
         this.setState({ ...this.state, searchDeviceList });
     }
 
@@ -124,16 +147,16 @@ export class Search extends Component {
     updateHardwareInfo = (e) => {
         e.preventDefault();
 
-        let { searchDeviceList, accessToken } = this.state;
+        let { searchDeviceList, accessToken, activeDeviceIndex } = this.state;
 
-        let productionNumber = searchDeviceList.production_number;
+        let productionNumber = searchDeviceList[activeDeviceIndex].production_number;
 
-        let device_id = searchDeviceList.device_id;
+        let device_id = searchDeviceList[activeDeviceIndex].device_id;
 
         if (
             (productionNumber)
             &&
-            (searchDeviceList.registered_by.id === this.props.userID)
+            (searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID)
         ) {
             let data = JSON.stringify({
                 production_number: productionNumber
@@ -167,7 +190,7 @@ export class Search extends Component {
             });
         } else {
             let title = "";
-            if (searchDeviceList.registered_by.id !== this.props.userID) {
+            if (searchDeviceList[activeDeviceIndex].registered_by.id !== this.props.userID) {
                 title = "You cannot update information of device registered by other registrars!"
                 
             } else {
@@ -183,12 +206,12 @@ export class Search extends Component {
     deleteHardware = (e) => {
         e.preventDefault();
 
-        let { searchDeviceList, accessToken } = this.state;
+        let { searchDeviceList, accessToken, activeDeviceIndex } = this.state;
 
-        let device_id = searchDeviceList.device_id;
+        let device_id = searchDeviceList[activeDeviceIndex].device_id;
 
 
-        if (searchDeviceList.registered_by.id === this.props.userID) {
+        if (searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID) {
             swal({
                 title: "Are You Sure You Want To Delete This Device?",
                 icon: "warning",
@@ -244,96 +267,56 @@ export class Search extends Component {
     }
 
     
+    
 
     getImageOrTable = () => {
-        let { searchDeviceList, selectedMore } = this.state;
-        let dataExists;
+        let { searchDeviceList, selectedMore, searchOption } = this.state;
 
-        const filteredDetailInfo = searchDeviceList.filter((item) => {
-            return item.device_id === selectedMore
-        })
+        // const filteredDetailInfo = searchDeviceList.filter((item) => {
+        //     return item.device_id === selectedMore
+        // })
 
-        if (Array.isArray(searchDeviceList)) {
-            dataExists = searchDeviceList.length === 0;
-        } else {
-            dataExists = Object.keys(searchDeviceList).length === 0 && searchDeviceList.constructor === Object;
-        }
-
-        if (dataExists) {
+        if (searchDeviceList.length === 0) {
             return (
                 <React.Fragment>
                     <Card.Img src={searching} style={{ height: '289px', width: '400px' }} />
                 </React.Fragment>
             )
         } else {
-            if (this.state.searchOption === "productionNumber"){
+            if (searchOption === "productionNumber"){
                 return (
                     <React.Fragment>
                         <Table responsive >
                             <tbody>
                                 <tr>
                                     <td>Device Id</td>
-                                    <td>{this.state.searchDeviceList.device_id}</td>
+                                    <td>{searchDeviceList[0].device_id}</td>
                                 </tr>
                                 <tr>
                                     <td>Production Number</td>
-                                    <td>{this.state.searchDeviceList.production_number}</td>
+                                    <td>{searchDeviceList[0].production_number}</td>
                                 </tr>
                                 <tr>
                                     <td>Registered By</td>
-                                    <td>{this.state.searchDeviceList.registered_by.username}</td>
+                                    <td>{searchDeviceList[0].registered_by.username}</td>
                                 </tr>
                                 <tr>
                                     <td>Registered On</td>
-                                    <td>{this.state.searchDeviceList.registered_on}</td>
+                                    <td>{searchDeviceList[0].registered_on}</td>
                                 </tr>
                             </tbody>
                         </Table>
                         <div style={buttonStyle}>
                             <ButtonToolbar>
-                                <Button variant="primary" onClick={() => this.setState({ editModalShow: true })}> Edit</Button>
+                                <Button variant="primary" onClick={() => this.setState({...this.state, editModalShow: true, activeDeviceIndex: 0})}> Edit</Button>
                                 <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
-                                <Modal
-                                    aria-labelledby="contained-modal-title-vcenter"
-                                    centered
-                                    show={this.state.editModalShow}
-                                >
-                                    <Form onSubmit={this.updateHardwareInfo}>
-                                        <Modal.Header closeButton onClick={() => this.setState({ editModalShow: false })}>
-                                            <Modal.Title id="contained-modal-title-vcenter">
-                                                Edit Hardware Info
-                                            </Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body>
-                                            <div>
-                                                <InputGroup className="mb-3">
-                                                    <InputGroup.Prepend>
-                                                        <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
-                                                    </InputGroup.Prepend>
-                                                    <FormControl
-                                                        placeholder="Enter Production Number"
-                                                        aria-label="Production Number"
-                                                        aria-describedby="basic-addon1"
-                                                        required
-                                                        type="number"
-                                                        value={this.state.searchDeviceList.production_number}
-                                                        onChange={this.newProductionNumber}
-                                                    />
-                                                </InputGroup>
-                                            </div>
-                                        </Modal.Body>
-                                        <Modal.Footer>
-                                            <Button variant="danger" onClick={() => this.setState({ editModalShow: false })}>Close</Button>
-                                            <Button variant="success" onClick={() => this.setState({ editModalShow: false })} type="submit">Save Changes</Button>
-                                        </Modal.Footer>
-                                    </Form>
-                                </Modal>
+                                
                             </ButtonToolbar>
                         </div>
                     </React.Fragment>
                 )
             }
-            else if (this.state.searchOption === "registeredDate") {
+            else if (searchOption === "registeredDate") {
                 return(
                     <React.Fragment>
                         <Table responsive >
@@ -343,18 +326,18 @@ export class Search extends Component {
                                     <th>Registered Date</th>
                                     <th></th>
                                 </tr>
-                                {this.state.searchDeviceList.map(searchDeviceList => (
-                                    <tr key={searchDeviceList.device_id}>
-                                        <td>{searchDeviceList.production_number}</td>
-                                        <td>{searchDeviceList.registered_on}</td>
-                                        <td> <Button variant="primary" onClick={() => this.setState({ moreInfoModalShow: true, selectedMore: searchDeviceList.device_id })}>More</Button></td>
+                                {searchDeviceList.map(device => (
+                                    <tr key={device.device_id}>
+                                        <td>{device.production_number}</td>
+                                        <td>{device.registered_on}</td>
+                                        <td> <Button variant="primary" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
                                         <Modal
                                         aria-labelledby="contained-modal-title-vcenter"
                                         centered
                                         show={this.state.moreInfoModalShow}
                                         >
                                             <Card>
-                                                <Modal.Header closeButton onClick={() => this.setState({ moreInfoModalShow: false })}>
+                                                <Modal.Header closeButton onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>
                                                     <Modal.Title id="contained-modal-title-vcenter">
                                                         Detail Info
                                                     </Modal.Title>
@@ -363,70 +346,29 @@ export class Search extends Component {
                                                     <div>
                                                         <Table responsive >
                                                             <tbody>
-                                                                {filteredDetailInfo.map(filteredDetailInfo => (
-                                                                    <React.Fragment>
-                                                                        <tr>
-                                                                            <td>Device Id</td>
-                                                                            <td>{filteredDetailInfo.device_id}</td>    
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td>Production Number</td>
-                                                                            <td>{filteredDetailInfo.production_number}</td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td>Registered By</td>
-                                                                            <td>{filteredDetailInfo.registered_by.username}</td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td>Registered On</td>
-                                                                            <td>{filteredDetailInfo.registered_on}</td>
-                                                                        </tr>   
-                                                                    </React.Fragment> 
-                                                                ))}     
+                                                                <tr>
+                                                                    <td>Device Id</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].device_id}</td>    
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Production Number</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].production_number}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Registered By</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_by.username}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Registered On</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_on}</td>
+                                                                </tr>    
                                                             </tbody>
                                                         </Table>
                                                     </div>
                                                 </Modal.Body>
                                                 <Modal.Footer>
-                                                    {/* <Button variant="primary" onClick={() => this.setState({ editModalShow: true })} type="submit">Edit</Button> */}
-                                                    <Button variant="danger" onClick={() => this.setState({ moreInfoModalShow: false })}>Close</Button>
-                                                    <Modal
-                                                        aria-labelledby="contained-modal-title-vcenter"
-                                                        centered
-                                                        show={this.state.editModalShow}
-                                                    >
-                                                        <Form onSubmit={this.updateHardwareInfo}>
-                                                            <Modal.Header closeButton onClick={() => this.setState({ editModalShow: false })}>
-                                                                <Modal.Title id="contained-modal-title-vcenter">
-                                                                    Edit Hardware Info
-                                                                </Modal.Title>
-                                                            </Modal.Header>
-                                                            <Modal.Body>
-                                                                <div>
-                                                                    <InputGroup className="mb-3">
-                                                                        <InputGroup.Prepend>
-                                                                            <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
-                                                                        </InputGroup.Prepend>
-                                                                        <FormControl
-                                                                            placeholder="Enter Production Number"
-                                                                            aria-label="Production Number"
-                                                                            aria-describedby="basic-addon1"
-                                                                            required
-                                                                            type="number"
-                                                                            value={filteredDetailInfo.map(filteredDetailInfo => (
-                                                                                filteredDetailInfo.production_number
-                                                                            ))}
-                                                                            onChange={this.newProductionNumberFromDetail}
-                                                                        />
-                                                                    </InputGroup>
-                                                                </div>
-                                                            </Modal.Body>
-                                                            <Modal.Footer>
-                                                                <Button variant="danger" onClick={() => this.setState({ editModalShow: false })}>Close</Button>
-                                                                <Button variant="success" onClick={() => this.setState({ editModalShow: false })} type="submit">Save Changes</Button>
-                                                            </Modal.Footer>
-                                                        </Form>
-                                                    </Modal>
+                                                    <Button variant="primary" onClick={() => this.setState({...this.state, editModalShow: true})} type="submit">Edit</Button>
+                                                    <Button variant="danger" onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>Close</Button>
                                                 </Modal.Footer>
                                             </Card>
                                         </Modal>
@@ -474,10 +416,17 @@ export class Search extends Component {
         }
     }
 
-    render() {
-        if (this.state.searchDeviceList === null) {
-
+    getToUpdateProductionNumber = () => {
+        try{
+            return this.state.searchDeviceList[this.state.activeDeviceIndex].production_number
         }
+        catch{
+            return '' ;
+        }
+        
+    }
+
+    render() {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
@@ -505,6 +454,41 @@ export class Search extends Component {
                     <br />
                     {this.getImageOrTable()}
                 </Card>
+                <Modal
+                    aria-labelledby="contained-modal-title-vcenter"
+                    centered
+                    show={this.state.editModalShow}
+                >
+                    <Form onSubmit={this.updateHardwareInfo}>
+                        <Modal.Header closeButton onClick={() => this.setState({...this.state, editModalShow: false })}>
+                            <Modal.Title id="contained-modal-title-vcenter">
+                                Edit Hardware Info
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div>
+                                <InputGroup className="mb-3">
+                                    <InputGroup.Prepend>
+                                        <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
+                                    </InputGroup.Prepend>
+                                    <FormControl
+                                        placeholder="Enter Production Number"
+                                        aria-label="Production Number"
+                                        aria-describedby="basic-addon1"
+                                        required
+                                        type="number"
+                                        value={this.getToUpdateProductionNumber()}
+                                        onChange={this.newProductionNumber}
+                                    />
+                                </InputGroup>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={() => this.setState({...this.state, editModalShow: false })}>Close</Button>
+                            <Button variant="success" onClick={() => this.setState({...this.state, editModalShow: false })} type="submit">Save Changes</Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal>
             </React.Fragment>
         )
     }
