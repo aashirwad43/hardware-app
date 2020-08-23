@@ -1,5 +1,5 @@
-import React, { Component, props } from 'react';
-import { Form, Button, ButtonToolbar, form, Row, Col, Table, Modal, InputGroup, FormControl } from 'react-bootstrap';
+import React, { Component } from 'react';
+import { Form, Button, ButtonToolbar, Table, Modal, InputGroup, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { setAuthCred } from '../actions';
 import { BASE_URL } from '../baseValues';
@@ -32,10 +32,8 @@ export class Profile extends Component {
         this.state = {
             editModalShow: false,
             changepasswordModalShow: false,
-            accessToken: this.props.credentials.tokens.accessToken,
             userInfo: {},
             password: {
-                // oldPassword: '',
                 newPassword: '',
                 confirmNewPassword: ''
             }
@@ -44,7 +42,7 @@ export class Profile extends Component {
     }
 
     componentDidMount() {
-        let { accessToken } = this.state;
+        let accessToken = this.props.credentials.tokens.accessToken;
 
         let username = this.props.credentials.user.username;
 
@@ -110,25 +108,11 @@ export class Profile extends Component {
     updateUserInfo = (e) => {
         e.preventDefault();
 
-        let { userInfo, accessToken } = this.state;
-
-        // let firstName = userInfo.first_name;
-        // let lastName = userInfo.last_name;
-        // let userName = userInfo.username;
-        // let emailAddress = userInfo.email;
-        // let phoneNumber = userInfo.phone;
-        // let accountTypeValue = userInfo.account_type.value;
-        // // let accountType = userInfo.account_type.type;
-        // let activeStatus = userInfo.is_active;
-        // let superUser = userInfo.is_superuser;
-
+        let accessToken = this.props.credentials.tokens.accessToken;
+        let { userInfo } = this.state;
         let id = userInfo.id;
-        userInfo.active = userInfo.is_active;
-        userInfo.superuser = userInfo.is_superuser;
-        userInfo.staff = userInfo.is_staff;
-
         let data = JSON.stringify(userInfo);
-        var reduxValue = this.props.credentials;
+        let reduxValue = this.props.credentials;
 
         $.ajax({
             method: "PUT",
@@ -150,8 +134,7 @@ export class Profile extends Component {
             data,
             dataType: 'json',
             success: (resp) => {
-                reduxValue.user = { username:userInfo.username }
-
+                reduxValue.user.username = resp.results.username;
                 this.props.setAuthCred(reduxValue);
 
                 swal({
@@ -170,12 +153,6 @@ export class Profile extends Component {
         });
     }
 
-    // updatedOldPassword = (e) => {
-    //     let { password } = this.state;
-    //     password.oldPassword = e.target.value
-    //     this.setState({ ...this.state, password })
-    // }
-
     updatedNewPassword = (e) => {
         let { password } = this.state;
         password.newPassword = e.target.value
@@ -193,16 +170,12 @@ export class Profile extends Component {
     updateUserPassword = (e) => {
         e.preventDefault();
 
-        let { password, userInfo, accessToken } = this.state;
-
+        let accessToken = this.props.credentials.tokens.accessToken;
+        let { password, userInfo } = this.state;
         let confirmNewPassword = password.confirmNewPassword;
-
         let newPassword = password.newPassword;
-
-        // let oldPassword = password.oldPassword;
-
         let id = userInfo.id;
-
+        
         let data = JSON.stringify({
             password: confirmNewPassword
         });

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, InputGroup, Form, Card, Table, ButtonToolbar, Modal, FormControl, Dropdown } from 'react-bootstrap';
+import { Button, InputGroup, Row, Col, Form, Card, Table, ButtonToolbar, Modal, FormControl, Dropdown } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
@@ -16,25 +16,25 @@ const cardStyle = {
 
 };
 
-const containerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-}
+// const containerStyle = {
+//     display: 'flex',
+//     justifyContent: 'center',
+// }
 
-const photoStyle = {
-    height: '250px',
-    width: '400px',
-}
+// const photoStyle = {
+//     height: '250px',
+//     width: '400px',
+// }
 
-const imageContainer = {
-    display: 'flex',
-    justifyContent: 'center',
-}
+// const imageContainer = {
+//     display: 'flex',
+//     justifyContent: 'center',
+// }
 
-const buttonContainer = {
-    display: 'flex',
-    justifyContent: 'center',
-}
+// const buttonContainer = {
+//     display: 'flex',
+//     justifyContent: 'center',
+// }
 
 const buttonStyle = {
 
@@ -52,7 +52,6 @@ export class Search extends Component {
             selectedMore: '',
             productionNumber: "",
             registeredDate: "",
-            accessToken: this.props.access,
             searchDeviceList: [],
             activeDeviceIndex: 0,
             searchOption: 'productionNumber',
@@ -75,7 +74,8 @@ export class Search extends Component {
     getHardware = (e) => {
         e.preventDefault();
 
-        let { accessToken, productionNumber, registeredDate } = this.state;
+        let accessToken = this.props.access;
+        let { productionNumber, registeredDate } = this.state;
 
         var { searchOption } = this.state;
 
@@ -88,8 +88,6 @@ export class Search extends Component {
             data = {registered: registeredDate}
         }
 
-        var component = this;
-
         $.ajax({
             method: "GET",
             url: BASE_URL + "/api/hardware/",
@@ -99,23 +97,22 @@ export class Search extends Component {
             },
             data,
             dataType: 'json',
-            success: function (resp) {
-                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: { next: resp.next, previous: resp.previous } });
+            success: (resp) => {
+                if (resp.results.length > 0) {
+                    this.setState({ ...this.state, searchDeviceList: resp.results, pagination: { next: resp.next, previous: resp.previous } });
+                } else {
+                    swal({
+                        title:"No such device found.",
+                        icon:"warning"
+                    })
+                }
             },
             error: function (resp) {
                 console.log(resp)
-                if (resp.status === 404 ) {
-                    swal({
-                        title: "Device Not Found.",
-                        icon: "warning"
-                    });
-                } else {
-                    swal({
-                        title: "Something went wrong.",
-                        text: "Please try again.",
-                        icon: "warning"
-                    });
-                }
+                swal({
+                    text: resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.",
+                    icon: "error"
+                });
             }
         });
 
@@ -148,20 +145,31 @@ export class Search extends Component {
 
     // }
 
-    updateHardwareInfo = (e) => {
-        e.preventDefault();
+    showEditModal = () => {
+        let { searchDeviceList, activeDeviceIndex } = this.state;
 
-        let { searchDeviceList, accessToken, activeDeviceIndex } = this.state;
+        let proceed = searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID;
+
+        if (proceed) {
+            this.setState({...this.state, editModalShow: true, activeDeviceIndex});
+        } else {
+            swal({
+                title:"Unauthorized",
+                text:"You cannot edit hardware registered by other registrars!",
+                icon:"warning"
+            });
+        }
+    }
+
+    updateHardwareInfo = () => {
+        let accessToken = this.props.access;
+
+        let { searchDeviceList, activeDeviceIndex } = this.state;
 
         let productionNumber = searchDeviceList[activeDeviceIndex].production_number;
-
         let device_id = searchDeviceList[activeDeviceIndex].device_id;
 
-        if (
-            (productionNumber)
-            &&
-            (searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID)
-        ) {
+        if (productionNumber) {
             let data = JSON.stringify({
                 production_number: productionNumber
             });
@@ -176,46 +184,47 @@ export class Search extends Component {
                 data,
                 dataType: 'json',
                 success: (resp) => {
+                    let icon;
+
+                    if (resp.status) {
+                        icon = "success";
+                    } else {
+                        icon = "warning";
+                    }
+
                     swal({
-                        title: "Hardware Info Updated Successfully.",
-                        icon: "success"
+                        title: resp.message,
+                        icon
                     })
                     // .then(() => this.setState({ ...this.state, productionNumber: ''}));
                 },
                 error: (resp) => {
                     console.log(resp);
                     swal({
-                        title: "Something went wrong.",
-                        text: "Please try again",
-                        icon: "warning"
+                        text: resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.",
+                        icon: "error"
                     })
                     // <Card.Img src={searching} style={{ height: '289px', width: '400px' }} />
                 }
             });
         } else {
-            let title = "";
-            if (searchDeviceList[activeDeviceIndex].registered_by.id !== this.props.userID) {
-                title = "You cannot update information of device registered by other registrars!"
-                
-            } else {
-                title = "Please Enter New Production Number."
-            }
             swal({
-                title,
+                title: "Please Enter New Production Number.",
                 icon: "warning"
-            }).then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: ''}));
+            })
+            // .then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: ''}));
         }
     }
 
     deleteHardware = (e) => {
         e.preventDefault();
-
-        let { searchDeviceList, accessToken, activeDeviceIndex } = this.state;
-
+        
+        let accessToken = this.props.access;
+        let { searchDeviceList, activeDeviceIndex } = this.state;
         let device_id = searchDeviceList[activeDeviceIndex].device_id;
+        let proceed = searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID;
 
-
-        if (searchDeviceList[activeDeviceIndex].registered_by.id === this.props.userID) {
+        if (proceed) {
             swal({
                 title: "Are You Sure You Want To Delete This Device?",
                 icon: "warning",
@@ -233,37 +242,52 @@ export class Search extends Component {
                     }
                 }
             })
-                .then(val => {
-                    if (val) {
-                        $.ajax({
-                            method: "DELETE",
-                            url: BASE_URL + `/api/hardware/${device_id}`,
-                            headers: {
-                                Authorization: accessToken,
-                                'Content-Type': 'application/json'
-                            },
-                            success: (resp) => {
-                                swal({
-                                    title: "Hardware Deleted Successfully.",
-                                    icon: "success"
-                                }).then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: '' }));
-                            },
-                            error: (resp) => {
-                                console.log(resp);
-                                swal({
-                                    title: "Something went wrong.",
-                                    text: "Please try again",
-                                    icon: "warning"
-                                })
-                            }
-                        });
-                    }
-                })
+            .then(val => {
+                if (val) {
+                    $.ajax({
+                        method: "DELETE",
+                        url: BASE_URL + `/api/hardware/${device_id}`,
+                        headers: {
+                            Authorization: accessToken,
+                            'Content-Type': 'application/json'
+                        },
+                        success: (resp) => {
+                            let icon;
+                            // var component = this;
 
+                            if (resp.status) {
+                                icon = "success";
+                            } else {
+                                icon = "warning";
+                            }
+                            swal({
+                                title: resp.message,
+                                icon
+                            })
+                            .then(() => {
+                                if (icon === "success") {
+                                    let index = this.getDeviceIndexFromState(device_id);
+                                    let { searchDeviceList } = this.state;
+
+                                    searchDeviceList.splice(index, 1);
+                                    this.setState({ ...this.state, searchDeviceList});
+                                }
+                            });
+                        },
+                        error: (resp) => {
+                            console.log(resp);
+                            swal({
+                                title: resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.",
+                                icon: "error"
+                            })
+                        }
+                    });
+                }
+            })
         }
         else {
             swal({
-                title: "Authorization Error.",
+                title: "Unauthorized",
                 text: "You cannot delete hardware registered by other registrar.",
                 icon: "warning"
             })
@@ -274,11 +298,7 @@ export class Search extends Component {
     
 
     getImageOrTable = () => {
-        let { searchDeviceList, selectedMore, searchOption } = this.state;
-
-        // const filteredDetailInfo = searchDeviceList.filter((item) => {
-        //     return item.device_id === selectedMore
-        // })
+        let { searchDeviceList, searchOption } = this.state;
 
         if (searchDeviceList.length === 0) {
             return (
@@ -312,7 +332,7 @@ export class Search extends Component {
                         </Table>
                         <div style={buttonStyle}>
                             <ButtonToolbar>
-                                <Button variant="primary" onClick={() => this.setState({...this.state, editModalShow: true, activeDeviceIndex: 0})}> Edit</Button>
+                                <Button variant="primary" onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}> Edit</Button>
                                 <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
                                 
                             </ButtonToolbar>
@@ -334,7 +354,7 @@ export class Search extends Component {
                                     <tr key={device.device_id}>
                                         <td>{device.production_number}</td>
                                         <td>{device.registered_on}</td>
-                                        <td> <Button variant="primary" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
+                                        <td> <Button variant="outline-primary" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
                                         <Modal
                                         aria-labelledby="contained-modal-title-vcenter"
                                         centered
@@ -371,17 +391,31 @@ export class Search extends Component {
                                                     </div>
                                                 </Modal.Body>
                                                 <Modal.Footer>
-                                                    <Button variant="primary" onClick={() => this.setState({...this.state, editModalShow: true})} type="submit">Edit</Button>
-                                                    <Button variant="danger" onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>Close</Button>
+                                                    <Button variant="primary" onClick={() => this.showEditModal() } type="submit">Edit</Button>
+                                                    <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
+                                                    <Button variant="outline-danger" onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>Close</Button>
                                                 </Modal.Footer>
                                             </Card>
                                         </Modal>
                                     </tr>    
                                 ))}
                             </tbody>
-                            <Button variant={}>Next</Button>
-                            <Button>Next</Button>
                         </Table>
+                        <div>
+                            <Row>
+                                <Col md={4}>
+                                    <Button size="sm">Previous</Button>
+                                </Col>
+                                <Col md={4}>
+                                    <div className="text-center">
+                                        Page 1 of 1
+                                    </div>
+                                </Col>
+                                <Col md={4}>
+                                    <Button size="sm" style={{float:'right'}}>Next</Button>
+                                </Col>
+                            </Row>
+                        </div>
                     </React.Fragment>    
                 )
             }
@@ -436,13 +470,13 @@ export class Search extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <a onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "" }) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
+                    <span onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "" }) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></span>
                     <br />
                     <Form onSubmit={this.getHardware}>
                         <InputGroup className="mb-3">
                             <InputGroup.Prepend>
                                 <Dropdown>
-                                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                    <Dropdown.Toggle className="prepend-dropdown" variant="outline-primary" id="dropdown-basic">
                                         Search By
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu>
@@ -453,7 +487,7 @@ export class Search extends Component {
                             </InputGroup.Prepend>
                             { this.getSearchField() }
                             <InputGroup.Append>
-                                <Button variant="success" type="submit">Search</Button>
+                                <Button variant="primary" type="submit">Search</Button>
                             </InputGroup.Append>
                         </InputGroup>
                     </Form>
@@ -491,7 +525,7 @@ export class Search extends Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="danger" onClick={() => this.setState({...this.state, editModalShow: false })}>Close</Button>
-                            <Button variant="success" onClick={() => this.setState({...this.state, editModalShow: false })} type="submit">Save Changes</Button>
+                            <Button variant="success" onClick={() => this.updateHardwareInfo()}>Save Changes</Button>
                         </Modal.Footer>
                     </Form>
                 </Modal>

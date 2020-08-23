@@ -1,50 +1,60 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import swal from 'sweetalert';
 import $ from 'jquery';
 
 import { setAuthCred } from '../actions';
+import { saveToLocalStorage } from '../localStorage';
 
 import AddHardware from './AddHardware';
 import Search from './Search';
 
-import { BASE_URL } from '../baseValues';
+import { BASE_URL, EXPIRY } from '../baseValues';
 
 class Home extends Component {
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            reduxValue:this.props.reduxValue
-        }
-    }
-
     componentDidMount() {
-        this.getUserID()
+        this.getUserID();
+        
+        setInterval(() => {
+            let { expiry } = this.props.reduxValue.credentials.tokens;
+            let now = Date.now();
+            
+            if (now >= expiry) {
+                this.refreshToken();
+            }
+        }, (10 * 1000)); // Check every 5 minutes
     }
 
     refreshToken = () => {
-        let { reduxValue } = this.state;
+        let reduxValue  = this.props.reduxValue;
 
-        setInterval(() => {
-            $.ajax({
-                method: "POST",
-                url: BASE_URL + "/api/auth/token/refresh",
-                data: {
-                    refresh: reduxValue.tokens.refreshToken
-                },
-                success: (resp) => {
-                    reduxValue.tokens.accessToken = `Bearer ${resp.access}`;
-                    this.props.setAuthCred(reduxValue);
-                }
-            })
-        }, 600000);
+        let data = JSON.stringify({
+            refresh: reduxValue.credentials.tokens.refreshToken
+        });
+
+        $.ajax({
+            method: "POST",
+            url: BASE_URL + "/api/auth/token/refresh/",
+            data,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            success: (resp) => {
+                let expiryTime = EXPIRY()
+                reduxValue.credentials.tokens.expiry = expiryTime;
+                reduxValue.credentials.tokens.accessToken = `Bearer ${resp.access}`;
+
+                saveToLocalStorage(reduxValue);
+
+                this.props.setAuthCred(reduxValue.credentials);
+            },
+            error: (e) => console.log(e)
+        });
     }
 
     getUserID = () => {
-        var { reduxValue } = this.state;
-        let { accessToken } = reduxValue.tokens;
-        let { username } = reduxValue.user;
+        let reduxValue = this.props.reduxValue;
+        let { accessToken } = reduxValue.credentials.tokens;
+        let { username } = reduxValue.credentials.user;
 
         let data = {
             username: username
@@ -60,16 +70,12 @@ class Home extends Component {
             data,
             dataType: 'json',
             success: (resp) => {
-                reduxValue.user.id = resp.results.id
-                this.props.setAuthCred(reduxValue);
+                reduxValue.credentials.user.id = resp.results.id;
+                this.props.setAuthCred(reduxValue.credentials);
             },
-            error: function (resp) {
+            error: (resp) => {
                 console.log(resp);
-                swal({
-                    title: "Unable to update your user data.",
-                    // text: "Please try again.",
-                    icon: "warning"
-                });
+                localStorage.removeItem('state');
             }
         });
     }
@@ -78,7 +84,7 @@ class Home extends Component {
         return (
             <React.Fragment>
                 <div className="container" style={{ marginTop: '10vh' }}>
-                    <div className="row justify-content-center">
+                    <div className="row">
                         <div className="col-sm-auto margin-card">
                             <AddHardware />
                         </div>
@@ -93,7 +99,7 @@ class Home extends Component {
 }
 
 const mapStateToProps = state => ({
-    reduxValue:state.credentials
+    reduxValue:state
 })
 
 export default connect(mapStateToProps, { setAuthCred })(Home);
