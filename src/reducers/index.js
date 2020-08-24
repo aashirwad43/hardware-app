@@ -7,6 +7,7 @@ export const defaultCredState = {
         username:""
     },
     tokens:{
+        expiry:undefined,
         accessToken:"",
         refreshToken:""
     }
@@ -15,7 +16,7 @@ export const defaultCredState = {
 function credReducer(state = defaultCredState, action) {
     switch (action.type) {
         case SET_AUTH:
-            console.log(action.cred)
+            // console.log(action.cred)
             return action.cred;
         default:
             return state;

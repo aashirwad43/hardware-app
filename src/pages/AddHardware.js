@@ -17,20 +17,20 @@ const cardStyle = {
 
 };
 
-const containerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-}
+// const containerStyle = {
+//     display: 'flex',
+//     justifyContent: 'center',
+// }
 
 const photoStyle = {
     height: '250px',
     width: '400px',
 }
 
-const imageContainer = {
-    display: 'flex',
-    justifyContent: 'center',
-}
+// const imageContainer = {
+//     display: 'flex',
+//     justifyContent: 'center',
+// }
 
 const buttonContainer = {
     display: 'flex',
@@ -41,7 +41,6 @@ export class AddHardware extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            accessToken: this.props.accessToken,
             prodNumber: ''
         }
     }
@@ -53,7 +52,8 @@ export class AddHardware extends Component {
     registerHardware = (e) => {
         e.preventDefault();
 
-        let { prodNumber, accessToken } = this.state
+        let accessToken = this.props.accessToken;
+        let { prodNumber } = this.state
 
         if (prodNumber) {
             let data = JSON.stringify({
@@ -80,17 +80,25 @@ export class AddHardware extends Component {
                 data,
                 dataType: 'json',
                 success: (resp) => {
+                    let icon;
+
+                    if (resp.status) {
+                        icon = "success";
+                    } else {
+                        icon = "warning";
+                    }
+
                     swal({
-                        title: "Hardware successfully added.",
-                        icon: "success"
-                    }).then(() => this.setState({ ...this.state, prodNumber: '' }));
+                        title: resp.message,
+                        icon
+                    })
+                    // .then(() => this.setState({ ...this.state, prodNumber: '' }));
                 },
                 error: (resp) => {
                     console.log(resp);
                     swal({
-                        title: "Something went wrong.",
-                        text: "Please try again",
-                        icon: "warning"
+                        text: resp.responseJSON.message,
+                        icon: "error"
                     })
                 }
             });
@@ -102,10 +110,11 @@ export class AddHardware extends Component {
         }
     }
 
-    verfiyDevice = (e) => {
+    verifyDevice = (e) => {
         e.preventDefault();
 
-        let { prodNumber, accessToken } = this.state
+        let accessToken = this.props.accessToken;
+        let { prodNumber } = this.state;
 
         if (prodNumber) {
             let data = JSON.stringify({
@@ -134,28 +143,21 @@ export class AddHardware extends Component {
                 success: (resp) => {
                     if (resp.status === true){
                         swal({
-                            title: "Device exists .",
+                            title: "Device exists.",
                             icon: "success"
-                        }).then(() => this.setState({ ...this.state, prodNumber: '' }));
+                        })
+                        // .then(() => this.setState({ ...this.state, prodNumber: '' }));
                     }
                     
                 },
                 error: (resp) => {
                     console.log(resp);
-                    if (resp.status === 404){
-                        swal({
-                            title: "Device doesnot exist.",
-                            icon: "warning"
-                        }).then(() => this.setState({ ...this.state, prodNumber: '' }));
-                    }
-                    else {
-                        swal({
-                            title: "Something went wrong.",
-                            text: "Please try again",
-                            icon: "warning"
-                        })
-                    }
-                    
+                    swal({
+                        title: resp.status === 404 ? resp.responseJSON.message : undefined,
+                        text: resp.status === 404 ? undefined : resp.responseJSON.message,
+                        icon: "error"
+                    })
+                    // .then(() => this.setState({ ...this.state, prodNumber: '' }));
                 }
             });
         } else {
@@ -175,7 +177,7 @@ export class AddHardware extends Component {
                     <br />
                     <Card.Img src={hardwareRegister} style={photoStyle} />
                     <br />
-                    <Form onSubmit={this.registerHardware} >
+                    <Form>
                         <InputGroup className="mb-3">
                             <InputGroup.Prepend>
                                 <InputGroup.Text id="basic-addon1">Production Number</InputGroup.Text>
@@ -189,8 +191,8 @@ export class AddHardware extends Component {
                             />
                         </InputGroup>
                         <div className="container" style={buttonContainer}>
-                            <Button variant="success" type="submit"  >Register Now</Button>
-                            <Button variant="success" style={{marginLeft: "10px"}} type="submit" onClick={this.verfiyDevice} >Verify Device</Button>
+                            <Button variant="info" onClick={this.registerHardware}>Register Now</Button>
+                            <Button variant="outline-info" style={{marginLeft: "10px"}} onClick={this.verifyDevice}>Verify Device</Button>
                         </div>
                     </Form>
                 </Card>

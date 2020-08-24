@@ -21,6 +21,14 @@ class App extends Component {
     this.state = defaultState;
   };
 
+  componentDidMount() {
+    let localState = JSON.parse(localStorage.getItem('state'));
+
+    if (localState) {
+      this.setAuth();
+    }
+  }
+  
   setMode = (mode) => {
     this.setState({...this.state, mode});
   }

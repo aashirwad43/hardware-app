@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navbar, Container, Dropdown } from 'react-bootstrap';
-// import { connect } from 'react-redux';
 
 import styled from 'styled-components';
 import { Component } from 'react';
+
+import { store } from '../store';
+
 
 const Styles = styled.div`
     .navbar-brand {
@@ -17,18 +19,22 @@ const Styles = styled.div`
     }   
 `;
 
-const localUsername = () => {
-    let local = JSON.parse(localStorage.getItem('state'));
-    return local.credentials.user.username;
-}
 
 class NavigationBar extends Component {
     constructor(props){
-        super(props)
+        super(props);
 
         this.state = {
-            username:localUsername()
+            username: ""
         }
+    }
+
+    componentDidMount() {
+        store.subscribe(() => {
+            this.setState({
+                username: store.getState().credentials.user.username
+            })
+        });
     }
 
     killSession = () => {
