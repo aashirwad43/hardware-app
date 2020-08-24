@@ -49,7 +49,6 @@ export class Search extends Component {
         this.state = {
             editModalShow: false,
             moreInfoModalShow: false,
-            selectedMore: '',
             productionNumber: "",
             registeredDate: "",
             accessToken: this.props.access,
@@ -57,9 +56,14 @@ export class Search extends Component {
             activeDeviceIndex: 0,
             searchOption: 'productionNumber',
             pagination: {
+                count: '',
                 next: '',
                 previous: ''
-            }
+            },
+            paginationButton: "",
+            showPaginationButton: true,
+            // showNext: true,
+            // showPrevious: true
         }
 
     }
@@ -75,16 +79,16 @@ export class Search extends Component {
     getHardware = (e) => {
         e.preventDefault();
 
-        let { accessToken, productionNumber, registeredDate } = this.state;
+        let { accessToken, productionNumber, registeredDate} = this.state;
 
-        var { searchOption } = this.state;
+        var { searchOption, showPaginationButton } = this.state;
 
         let data;
 
         if (searchOption === 'productionNumber') {
             data = {search: productionNumber}
         }
-        else {
+        else if (searchOption === 'registeredDate') {
             data = {registered: registeredDate}
         }
 
@@ -100,8 +104,14 @@ export class Search extends Component {
             data,
             dataType: 'json',
             success: function (resp) {
-                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: { next: resp.next, previous: resp.previous } });
-            },
+                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: {count: resp.count, next: resp.next, previous: resp.previous } });
+                if (resp.count <= 10) {
+                    component.setState({...component.state, showPaginationButton: false})
+                } else if (resp.count > 10) {
+                    component.setState({...component.state, showPaginationButton: true})
+                }
+            }
+            ,
             error: function (resp) {
                 console.log(resp)
                 if (resp.status === 404 ) {
@@ -121,7 +131,115 @@ export class Search extends Component {
 
     }
 
+
+    getHardwareRegisteredByMe = (e) => {
+        e.preventDefault();
+
+        this.setState({...this.state, searchOption:"byMyself", searchDeviceList: []})
+
+        let { accessToken } = this.state;
+
+        let { searchDeviceList } = this.state;
+
+        let data;
+        
+        data = { by: this.props.userID}
+
+        var component = this;
+
+        $.ajax({
+            method: "GET",
+            url: BASE_URL + "/api/hardware/",
+            headers: {
+                Authorization: accessToken,
+                'Content-Type': 'application/json'
+            },
+            data,
+            dataType: 'json',
+            success: function (resp) {
+                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: {count: resp.count, next: resp.next, previous: resp.previous } });
+                if (resp.count <= 10) {
+                    component.setState({...component.state, showPaginationButton: false})
+                } else if (resp.count > 10) {
+                    component.setState({...component.state, showPaginationButton: true})
+                }
+            },
+            error: function (resp) {
+                console.log(resp)
+                if (resp.status === 404 ) {
+                    swal({
+                        title: "Device Not Found.",
+                        icon: "warning"
+                    });
+                } else {
+                    swal({
+                        title: "Something went wrong.",
+                        text: "Please try again.",
+                        icon: "warning"
+                    });
+                }
+            }
+        });
+    }
+
     getPagination = (e) => {
+        // e.preventDefault();
+
+        let {accessToken} = this.state;
+
+        let {pagination, paginationButton} = this.state;
+
+        let newUrl;
+
+        if ( pagination.next === null && paginationButton === "next" ) {
+            // this.setState({...this.state, showNext: !this.state.showNext})
+            swal({
+                title: "This is the last page",
+                icon: "warning"
+            })
+        }else if ( pagination.previous === null && paginationButton === "previous" ) {
+            // this.setState({...this.state, showPrevious: !this.state.showP})
+            swal({
+                title: "This is the first page",
+                icon: "warning"
+            })
+        } else if ( pagination.next !== null ) {
+            newUrl = pagination.next
+        } else if ( pagination.previous !== null ) {
+            newUrl = pagination.previous
+        } 
+
+        var component = this;
+
+        $.ajax({
+            method: "GET",
+            url: newUrl,
+            headers: {
+                Authorization: accessToken,
+                'Content-Type': 'application/json'
+            },
+            dataType: 'json',
+            success: function (resp) {
+                component.setState({ ...component.state, searchDeviceList: resp.results, pagination: { next: resp.next, previous: resp.previous } });
+                console.log(resp);
+            },
+            error: function (resp) {
+                console.log(resp)
+                if (resp.status === 404 ) {
+                    swal({
+                        title: "Device Not Found.",
+                        icon: "warning"
+                    });
+                } 
+                // else {
+                //     swal({
+                //         title: "Something went wrong.",
+                //         text: "Please try again.",
+                //         icon: "warning"
+                //     });
+                // }
+            }
+        });
 
     }
 
@@ -143,10 +261,6 @@ export class Search extends Component {
         this.setState({ ...this.state, searchDeviceList });
     }
 
-    // newProductionNumberFromDetail = (e) => {
-    //     let {  } = this.state;
-
-    // }
 
     updateHardwareInfo = (e) => {
         e.preventDefault();
@@ -274,7 +388,7 @@ export class Search extends Component {
     
 
     getImageOrTable = () => {
-        let { searchDeviceList, selectedMore, searchOption } = this.state;
+        let { searchDeviceList,  searchOption } = this.state;
 
         // const filteredDetailInfo = searchDeviceList.filter((item) => {
         //     return item.device_id === selectedMore
@@ -378,10 +492,87 @@ export class Search extends Component {
                                         </Modal>
                                     </tr>    
                                 ))}
-                            </tbody>
-                            <Button variant={}>Next</Button>
-                            <Button>Next</Button>
+                            </tbody>   
                         </Table>
+                        { this.state.showPaginationButton? 
+                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                <Button variant="secondary" onClick={ () => this.setState({...this.state, paginationButton: "previous"}, () => {this.getPagination()} )}>Previous</Button>
+                                <Button variant="secondary" style={{marginLeft: '10px'}}  onClick={ () => this.setState({...this.state, paginationButton: "next"}, () => {this.getPagination()} )}>Next</Button>
+                            </div>
+                        : null
+                        }
+                        
+                        
+                    </React.Fragment>    
+                )
+            } else if ( searchOption === "byMyself" ) {
+                return(
+                    <React.Fragment>
+                        <Table responsive >
+                            <tbody>
+                                <tr>
+                                    <th>Production Number</th>
+                                    <th>Registered Date</th>
+                                    <th></th>
+                                </tr>
+                                {searchDeviceList.map(device => (
+                                    <tr key={device.device_id}>
+                                        <td>{device.production_number}</td>
+                                        <td>{device.registered_on}</td>
+                                        <td> <Button variant="primary" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
+                                        <Modal
+                                        aria-labelledby="contained-modal-title-vcenter"
+                                        centered
+                                        show={this.state.moreInfoModalShow}
+                                        >
+                                            <Card>
+                                                <Modal.Header closeButton onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>
+                                                    <Modal.Title id="contained-modal-title-vcenter">
+                                                        Detail Info
+                                                    </Modal.Title>
+                                                </Modal.Header>
+                                                <Modal.Body>
+                                                    <div>
+                                                        <Table responsive >
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Device Id</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].device_id}</td>    
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Production Number</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].production_number}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Registered By</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_by.username}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Registered On</td>
+                                                                    <td>{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_on}</td>
+                                                                </tr>    
+                                                            </tbody>
+                                                        </Table>
+                                                    </div>
+                                                </Modal.Body>
+                                                <Modal.Footer>
+                                                    <Button variant="primary" onClick={() => this.setState({...this.state, editModalShow: true})} type="submit">Edit</Button>
+                                                    <Button variant="danger" onClick={() => this.setState({...this.state, moreInfoModalShow: false })}>Close</Button>
+                                                </Modal.Footer>
+                                            </Card>
+                                        </Modal>
+                                    </tr>    
+                                ))}
+                            </tbody>   
+                        </Table>
+                        {this.state.showPaginationButton?
+                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                <Button variant="secondary" onClick={ () => this.setState({...this.state, paginationButton: "previous"}, () => {this.getPagination()} )}>Previous</Button>
+                                <Button variant="secondary" style={{marginLeft: '10px'}}  onClick={ () => this.setState({...this.state, paginationButton: "next"}, () => {this.getPagination()} )}>Next</Button>
+                            </div>
+                        : null
+                        }
+                        
                     </React.Fragment>    
                 )
             }
@@ -419,6 +610,18 @@ export class Search extends Component {
                         required />
                 </React.Fragment>
             )
+        } else if ( searchOption === "byMyself" ) {
+            return (
+                <React.Fragment>
+                    <Form.Control
+                        placeholder="Username"
+                        aria-label="Username"
+                        aria-describedby="basic-addon1"
+                        type="text"
+                        value={this.props.username}
+                        required />
+                </React.Fragment>
+            )
         }
     }
 
@@ -436,7 +639,7 @@ export class Search extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <a onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "" }) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
+                    <a onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "", searchOption: "productionNumber"}) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></a>
                     <br />
                     <Form onSubmit={this.getHardware}>
                         <InputGroup className="mb-3">
@@ -448,6 +651,7 @@ export class Search extends Component {
                                     <Dropdown.Menu>
                                         <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"productionNumber", searchDeviceList:[], productionNumber: ""}) }>Production Number</Dropdown.Item>
                                         <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"registeredDate", searchDeviceList:[], registeredDate: ""}) }>Registered Date</Dropdown.Item>
+                                        <Dropdown.Item onClick={ this.getHardwareRegisteredByMe }>Myself</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </InputGroup.Prepend>
