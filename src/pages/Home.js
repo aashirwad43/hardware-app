@@ -9,6 +9,7 @@ import AddHardware from './AddHardware';
 import HardwareInfo from './HardwareInfo';
 
 import { BASE_URL, EXPIRY } from '../baseValues';
+import { Row , Col} from 'react-bootstrap';
 
 class Home extends Component {
     componentDidMount() {
@@ -83,15 +84,23 @@ class Home extends Component {
     render() {
         return (
             <React.Fragment>
-                <div className="container" style={{ marginTop: '10vh'}}>
-                    <div className="row">       
+                <div className="container" style={{ marginTop: '5vh'}}>
+                    <Row>
+                        <Col sm={3} className="margin-card">
+                            <HardwareInfo />
+                        </Col>
+                        <Col sm={9} className="margin-card">
+                            <AddHardware />
+                        </Col>
+                    </Row>
+                    {/* <div className="row">       
                         <div className="col-sm-auto margin-card">
                             <HardwareInfo />
                         </div>
                         {/* <div className="col-sm-auto margin-card" > */}
-                            <AddHardware />
+                            {/* <AddHardware /> */}
                         {/* </div>  */}
-                    </div>
+                    {/* </div> */}
                 </div>
             </React.Fragment>
         )

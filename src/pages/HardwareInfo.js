@@ -16,8 +16,8 @@ const cardStyle = {
     padding: '20px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px 0px #000',
-    width: '20rem',
-    height: '10.70rem'
+    // width: '20rem',
+    height: '12.30rem'
 };
 
 const photoStyle = {
@@ -89,7 +89,7 @@ export class HardwareInfo extends Component {
                                     <CardImg src={today} style={photoStyle}></CardImg>
                                 </div>
                                 <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeToday}/></h3>
-                                <h6 style={{textAlign: 'center'}}>Devices Registered by me today</h6>
+                                <h6 style={{textAlign: 'center'}}>Devices Registered By Me Today</h6>
                             </Card>
                         </div>
                         <div className="row-sm-auto margin-card">
@@ -98,7 +98,7 @@ export class HardwareInfo extends Component {
                                     <CardImg src={alltime} style={photoStyle}></CardImg>
                                 </div>
                                 <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeAllTime}/></h3>
-                                <h6 style={{textAlign: 'center'}}>Registered by me all time</h6>
+                                <h6 style={{textAlign: 'center'}}>Registered By Me All Time</h6>
                             </Card>
                         </div>
                     </div>

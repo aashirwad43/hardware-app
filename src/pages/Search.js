@@ -6,35 +6,18 @@ import swal from 'sweetalert';
 import $ from 'jquery';
 
 import { BASE_URL } from '../baseValues'
-import searching from "../assets/images/searching.png";
+// import searching from "../assets/images/searching.png";
+import searching from "../assets/images/search.svg";
+
 
 const cardStyle = {
-    padding: '30px',
+    padding: '10px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px 0px #000',
-    width: '300rem',
-    height: '35rem'
+    width: '270rem',
+    // height: '35rem'
 };
 
-// const containerStyle = {
-//     display: 'flex',
-//     justifyContent: 'center',
-// }
-
-// const photoStyle = {
-//     height: '250px',
-//     width: '400px',
-// }
-
-// const imageContainer = {
-//     display: 'flex',
-//     justifyContent: 'center',
-// }
-
-// const buttonContainer = {
-//     display: 'flex',
-//     justifyContent: 'center',
-// }
 
 const buttonStyle = {
 
@@ -102,7 +85,6 @@ export class Search extends Component {
             data,
             dataType: 'json',
             success: (resp) => {
-                console.log(resp)
                 if (resp.results.length > 0) {
                     if (resp.count) {
                         pagination.count = resp.count;
@@ -339,9 +321,12 @@ export class Search extends Component {
         if (searchDeviceList.length === 0) {
             return (
                 <React.Fragment>
-                    <div style={{display: 'flex', justifyContent: 'center'}} >
-                        <Card.Img src={searching} style={{width: '50%'}} />
+                    <div className="text-center">
+                        <img alt="search" src={searching} style={{width: '40%'}} />
                     </div>
+                    {/* <div className="container">
+                        <img alt="search" src={searching} style={{width: '100%'}} />
+                    </div> */}
                 </React.Fragment>
             )
         } else {
@@ -349,18 +334,18 @@ export class Search extends Component {
                 return (
                     <React.Fragment>
                         <Row>
-                            <Col sm={3}>
+                            <Col sm={2}>
                                 <Form.Label>Device ID</Form.Label>
                             </Col>
-                            <Col sm={9}>
-                                <p className="form-control"><small>{searchDeviceList[0].device_id}</small></p>
+                            <Col >
+                                <p className="form-control">{searchDeviceList[0].device_id}</p>
                             </Col>
                         </Row>
                         <Row>
-                            <Col sm={5}>
+                            <Col sm={2}>
                                 <Form.Label>Production Number</Form.Label>
                             </Col>
-                            <Col sm={7}>
+                            <Col >
                                 <p className="form-control">{searchDeviceList[0].production_number}</p>
                             </Col>
                         </Row>
@@ -371,7 +356,7 @@ export class Search extends Component {
                             </Col>
                             <Col>
                                 <Form.Label>Registered On</Form.Label>
-                                <p className="form-control"><small>{searchDeviceList[0].registered_on}</small></p>
+                                <p className="form-control">{searchDeviceList[0].registered_on}</p>
                             </Col>
                         </Row>
                         <Row>
@@ -381,7 +366,7 @@ export class Search extends Component {
                             </Col>
                             <Col>
                                 <Form.Label>Updated On</Form.Label>
-                                <p className="form-control"><small>{searchDeviceList[0].updated_on}</small></p>
+                                <p className="form-control">{searchDeviceList[0].updated_on}</p>
                             </Col>
                         </Row>
                         <div style={buttonStyle}>
@@ -398,14 +383,13 @@ export class Search extends Component {
                 return(
                     <React.Fragment>
                         <div style={{overflowY:'scroll', height: '25rem'}}>
-                            <Table responsive>
+                            <Table responsive style={{textAlign: 'center'}}>
                                 <tbody>
                                     <tr>
                                         <th>Device ID</th>
                                         <th>Production Number</th>
                                         <th>Registered By</th>
                                         <th>Registered Date</th>
-                                        <th></th>
                                         <th></th>
                                     </tr>
                                     {searchDeviceList.map(device => (
@@ -414,8 +398,10 @@ export class Search extends Component {
                                             <td>{device.production_number}</td>
                                             <td>{device.registered_by.username}</td>
                                             <td>{device.registered_on}</td>
-                                            <td> <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
-                                            <td> <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button></td>
+                                            <td> 
+                                                <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More</Button> 
+                                                <Button variant="outline-primary" style={{margin: '5px'}} size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button>
+                                            </td>
                                         </tr>    
                                     ))}
                                 </tbody>
@@ -569,29 +555,32 @@ export class Search extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <span onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "", searchOption: "productionNumber"}) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></span>
-                    <br />
-                    <Form onSubmit={(e) => e.preventDefault()}>
-                        <InputGroup className="mb-3">
-                            <InputGroup.Prepend>
-                                <Dropdown>
-                                    <Dropdown.Toggle className="prepend-dropdown" variant="outline-primary" id="dropdown-basic">
-                                        Search By
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"productionNumber", searchDeviceList:[], productionNumber: ""}) }>Production Number</Dropdown.Item>
-                                        <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"registeredDate", searchDeviceList:[], registeredDate: ""}) }>Registered Date</Dropdown.Item>
-                                        <Dropdown.Item onClick={ this.getHardwareRegisteredByMe }>Myself</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </InputGroup.Prepend>
-                            { this.getSearchField() }
-                            <InputGroup.Append>
-                                <Button variant="primary" type="button" onClick={this.getHardware}>Search</Button>
-                            </InputGroup.Append>
-                        </InputGroup>
-                    </Form>
-                    {this.getImageOrTable()}
+                    <Card.Body>
+                        <span onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "", searchOption: "productionNumber"}) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></span>
+                        <br />
+                        <Form onSubmit={(e) => e.preventDefault()}>
+                            <InputGroup className="mb-3">
+                                <InputGroup.Prepend>
+                                    <Dropdown>
+                                        <Dropdown.Toggle className="prepend-dropdown" variant="outline-primary" id="dropdown-basic">
+                                            Search By
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"productionNumber", searchDeviceList:[], productionNumber: ""}) }>Production Number</Dropdown.Item>
+                                            <Dropdown.Item onClick={ () => this.setState({...this.state, searchOption:"registeredDate", searchDeviceList:[], registeredDate: ""}) }>Registered Date</Dropdown.Item>
+                                            <Dropdown.Item onClick={ this.getHardwareRegisteredByMe }>Myself</Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </InputGroup.Prepend>
+                                { this.getSearchField() }
+                                <InputGroup.Append>
+                                    <Button variant="primary" type="button" onClick={this.getHardware}>Search</Button>
+                                </InputGroup.Append>
+                            </InputGroup>
+                        </Form>
+                        <hr />
+                        {this.getImageOrTable()}
+                    </Card.Body>
                 </Card>
                 <Modal
                     aria-labelledby="contained-modal-title-vcenter"

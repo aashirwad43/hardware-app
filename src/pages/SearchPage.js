@@ -6,7 +6,7 @@ class SearchPage extends Component {
     render() {
         return (
             <React.Fragment>
-                <div className="container" style={{ marginTop: '10vh', display: 'flex', justifyContent: 'center' }} >
+                <div className="container" style={{ marginTop: '5vh', display: 'flex', justifyContent: 'center' }} >
                     <Search />
                 </div>
             </React.Fragment>
