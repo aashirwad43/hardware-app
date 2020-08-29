@@ -12,8 +12,8 @@ const cardStyle = {
     padding: '30px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px 0px #000',
-    width: '30rem'
-
+    width: '300rem',
+    height: '35rem'
 };
 
 // const containerStyle = {
@@ -339,7 +339,9 @@ export class Search extends Component {
         if (searchDeviceList.length === 0) {
             return (
                 <React.Fragment>
-                    <Card.Img src={searching} style={{ height: '289px', width: '400px' }} />
+                    <div style={{display: 'flex', justifyContent: 'center'}} >
+                        <Card.Img src={searching} style={{width: '50%'}} />
+                    </div>
                 </React.Fragment>
             )
         } else {
@@ -395,19 +397,25 @@ export class Search extends Component {
             else  {
                 return(
                     <React.Fragment>
-                        <div style={{overflowY:'scroll', height: '15rem'}}>
+                        <div style={{overflowY:'scroll', height: '25rem'}}>
                             <Table responsive>
                                 <tbody>
                                     <tr>
+                                        <th>Device ID</th>
                                         <th>Production Number</th>
+                                        <th>Registered By</th>
                                         <th>Registered Date</th>
+                                        <th></th>
                                         <th></th>
                                     </tr>
                                     {searchDeviceList.map(device => (
                                         <tr key={device.device_id}>
+                                            <td>{device.device_id}</td>
                                             <td>{device.production_number}</td>
+                                            <td>{device.registered_by.username}</td>
                                             <td>{device.registered_on}</td>
                                             <td> <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More </Button></td>
+                                            <td> <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button></td>
                                         </tr>    
                                     ))}
                                 </tbody>
@@ -583,7 +591,6 @@ export class Search extends Component {
                             </InputGroup.Append>
                         </InputGroup>
                     </Form>
-                    <br />
                     {this.getImageOrTable()}
                 </Card>
                 <Modal

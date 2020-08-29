@@ -3,12 +3,12 @@ import { Provider } from 'react-redux';
 
 import Home from './pages/Home';
 import Login  from './pages/Login';
-import About from './pages/About';
 import Profile from './pages/Profile';
 
 import NavigationBar from './components/NavigationBar';
 
 import store from './store';
+import SearchPage from './pages/SearchPage';
 
 const defaultState = {
   authenticated:false,
@@ -42,11 +42,11 @@ class App extends Component {
     if (mode === "home") {
       returnComponent = (<Home />)
     }
+    else if (mode === "search") {
+      returnComponent = (<SearchPage />)
+    }
     else if (mode === "profile") {
       returnComponent = (<Profile />)
-    }
-    else if (mode === "about") {
-      returnComponent = (<About />)
     }
 
     return (

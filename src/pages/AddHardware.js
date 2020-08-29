@@ -13,7 +13,9 @@ const cardStyle = {
     padding: '30px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px 0px #000',
-    width: '30rem'
+    width: '40rem',
+    height: '34rem',
+    marginLeft: '1rem'
 
 };
 
@@ -23,8 +25,8 @@ const cardStyle = {
 // }
 
 const photoStyle = {
-    height: '250px',
-    width: '400px',
+    // height: '300px',
+    width: '90%',
 }
 
 // const imageContainer = {
@@ -173,9 +175,11 @@ export class AddHardware extends Component {
         return (
             <React.Fragment>
                 <Card style={cardStyle}>
-                    <h3 style={{ textAlign: 'center' }}>Register Hardware</h3>
+                    <h3 style={{ textAlign: 'center' }} onClick={() => this.setState({...this.state, prodNumber: ''})}>Register Hardware</h3>
                     <br />
-                    <Card.Img src={hardwareRegister} style={photoStyle} />
+                    <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <Card.Img src={hardwareRegister} style={photoStyle} />
+                    </div>
                     <br />
                     <Form>
                         <InputGroup className="mb-3">

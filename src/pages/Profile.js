@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Button, ButtonToolbar, Table, Modal, InputGroup, FormControl } from 'react-bootstrap';
+import { Form, Button, ButtonToolbar, Table, Modal, InputGroup, FormControl, Image } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { setAuthCred } from '../actions';
 import { BASE_URL } from '../baseValues';
@@ -7,6 +7,8 @@ import $ from 'jquery';
 import swal from 'sweetalert';
 
 import loading from '../assets/images/loading.gif';
+import user from '../assets/images/user.png';
+
 
 const formStyle = {
 
@@ -21,6 +23,15 @@ const buttonStyle = {
     display: 'flex',
     justifyContent: 'center'
 
+};
+
+const photoDivStyle= {
+    display: 'flex',
+    justifyContent: 'center'
+};
+
+const photoStyle = {
+    width: '150px'
 };
 
 
@@ -226,7 +237,10 @@ export class Profile extends Component {
                 <div className="row justify-content-center">
                     <div className="col-10 col-sm-6 col-md-6">
                         <div className="form-container" style={formStyle}>
-                            <h3 style={{ textAlign: 'center' }}>Profile</h3>
+                            {/* <h3 style={{ textAlign: 'center' }}>Profile</h3> */}
+                            <div style={photoDivStyle}>
+                                <Image src={user} style={photoStyle}></Image>
+                            </div>
                             <br />
                             <div className="container" style={{ textAlign: 'center' }}>
                                 <Table responsive>

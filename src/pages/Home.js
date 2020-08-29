@@ -6,7 +6,7 @@ import { setAuthCred } from '../actions';
 import { saveToLocalStorage } from '../localStorage';
 
 import AddHardware from './AddHardware';
-import Search from './Search';
+import HardwareInfo from './HardwareInfo';
 
 import { BASE_URL, EXPIRY } from '../baseValues';
 
@@ -83,14 +83,14 @@ class Home extends Component {
     render() {
         return (
             <React.Fragment>
-                <div className="container" style={{ marginTop: '10vh' }}>
-                    <div className="row">
+                <div className="container" style={{ marginTop: '10vh'}}>
+                    <div className="row">       
                         <div className="col-sm-auto margin-card">
+                            <HardwareInfo />
+                        </div>
+                        {/* <div className="col-sm-auto margin-card" > */}
                             <AddHardware />
-                        </div>
-                        <div className="col-sm-auto margin-card">
-                            <Search />
-                        </div>
+                        {/* </div>  */}
                     </div>
                 </div>
             </React.Fragment>
