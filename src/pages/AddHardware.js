@@ -17,7 +17,9 @@ const cardStyle = {
     boxShadow: '0px 0px 10px 0px #000',
     // width: '40rem',
     // height: '34rem',
-    marginLeft: '1rem'
+    marginLeft: '1rem',
+    marginRight: '1rem',
+    marginTop: '0.8rem'
 
 };
 

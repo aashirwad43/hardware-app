@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, CardImg } from 'react-bootstrap';
+import { Card, CardImg, Row, Col } from 'react-bootstrap';
 import CountUp from 'react-countup';
 import today2 from '../assets/images/today2.png';
 import today from '../assets/images/today.png';
@@ -11,17 +11,17 @@ import $ from 'jquery';
 import swal from 'sweetalert';
 
 
-
 const cardStyle = {
-    padding: '20px',
+    padding: '10px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px 0px #000',
     // width: '20rem',
-    height: '12.30rem'
+    // height: '12.30rem'
 };
 
 const photoStyle = {
-    width: '70px'
+    width: '70px',
+    paddingTop: '10px'
 }
 
 const imageDivStyle = {
@@ -36,6 +36,7 @@ export class HardwareInfo extends Component {
 
         this.state = {
             allTime: 0,
+            today: 0,
             byMeToday: 0,
             byMeAllTime: 0 
         }
@@ -55,7 +56,7 @@ export class HardwareInfo extends Component {
             },
             dataType: 'json',
             success: function (resp) {
-                component.setState({ ...component.state, allTime: resp.results.device_registered.all_time, byMeToday: resp.results.device_registered.by_you.today, byMeAllTime: resp.results.device_registered.by_you.all_time });
+                component.setState({ ...component.state, allTime: resp.results.device_registered.all_time, today: resp.results.device_registered.today, byMeToday: resp.results.device_registered.by_you.today, byMeAllTime: resp.results.device_registered.by_you.all_time });
             },
             error: function (resp) {
                 console.log(resp);
@@ -73,7 +74,71 @@ export class HardwareInfo extends Component {
         return (
             <React.Fragment>
                 <div className="container">
-                    <div className="col">
+                    <Row>
+                        <Col sm={13} className="margin-card">
+                            <Card style={cardStyle}>
+                                <Row>
+                                    <Col>
+                                        <div style={imageDivStyle}>
+                                            <CardImg src={today2} style={photoStyle}></CardImg>
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.allTime}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered Till Date</h6>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        </Col>
+                        <Col sm={13} className="margin-card">
+                            <Card style={cardStyle}>
+                                <Row>
+                                    <Col>
+                                        <div style={imageDivStyle}>
+                                            <CardImg src={alltime} style={photoStyle}></CardImg>
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.today}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered Today</h6>
+                                    </Col>
+                                </Row>
+                            </Card> 
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col sm={13} className="margin-card">
+                            <Card style={cardStyle}>
+                                <Row>
+                                    <Col>
+                                        <div style={imageDivStyle}>
+                                            <CardImg src={alltime} style={photoStyle}></CardImg>
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeAllTime}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Devcies Registered By Me All Time</h6>
+                                    </Col>
+                                </Row>
+                            </Card> 
+                        </Col>
+                        <Col sm={13} className="margin-card">
+                            <Card style={cardStyle}>
+                                <Row> 
+                                    <Col>
+                                        <div style={imageDivStyle}>
+                                            <CardImg src={today} style={photoStyle}></CardImg>
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeToday}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Devices Registered By Me Today</h6>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        </Col>  
+                    </Row>
+                    {/* <div className="col">
                         <div className="row-sm-auto margin-card">
                             <Card style={cardStyle}>
                                 <div style={imageDivStyle}>
@@ -101,7 +166,7 @@ export class HardwareInfo extends Component {
                                 <h6 style={{textAlign: 'center'}}>Registered By Me All Time</h6>
                             </Card>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </React.Fragment>
         )

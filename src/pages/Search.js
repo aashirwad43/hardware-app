@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
-import { Button, InputGroup, Row, Col, Form, Card, Table, ButtonToolbar, Modal, FormControl, Dropdown } from 'react-bootstrap';
+import { Button, InputGroup, Row, Col, Form, Card, Table, Modal, FormControl, Dropdown } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
 import $ from 'jquery';
 
-import { BASE_URL } from '../baseValues'
+import { BASE_URL } from '../baseValues';
 // import searching from "../assets/images/searching.png";
 import searching from "../assets/images/search.svg";
+import loading from '../assets/images/loading.gif';
 
 
 const cardStyle = {
@@ -24,6 +25,17 @@ const buttonStyle = {
     display: 'flex',
     justifyContent: 'center'
 
+};
+
+const deleteStyle = {
+    color: 'red',
+    cursor: 'pointer'
+};
+
+const editStyle = {
+    color: '#07adfa',
+    margin: '15px',
+    cursor: 'pointer'
 };
 
 export class Search extends Component {
@@ -81,6 +93,16 @@ export class Search extends Component {
             headers: {
                 Authorization: accessToken,
                 'Content-Type': 'application/json'
+            },
+            xhr: function () {
+                let xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function () {
+                    swal({
+                        icon:loading
+                    });
+                }, false);
+
+                return xhr;
             },
             data,
             dataType: 'json',
@@ -204,6 +226,16 @@ export class Search extends Component {
                     Authorization: accessToken,
                     'Content-Type': 'application/json'
                 },
+                xhr: function () {
+                    let xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function () {
+                        swal({
+                            icon:loading
+                        });
+                    }, false);
+
+                    return xhr;
+                },
                 data,
                 dataType: 'json',
                 success: (resp) => {
@@ -240,7 +272,7 @@ export class Search extends Component {
     }
 
     deleteHardware = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         
         let accessToken = this.props.access;
         let { searchDeviceList, activeDeviceIndex } = this.state;
@@ -273,6 +305,16 @@ export class Search extends Component {
                         headers: {
                             Authorization: accessToken,
                             'Content-Type': 'application/json'
+                        },
+                        xhr: function () {
+                            let xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener("progress", function () {
+                                swal({
+                                    icon:loading
+                                });
+                            }, false);
+        
+                            return xhr;
                         },
                         success: (resp) => {
                             let icon;
@@ -333,7 +375,35 @@ export class Search extends Component {
             if (searchOption === "productionNumber"){
                 return (
                     <React.Fragment>
-                        <Row>
+                        <Table responsive style={{textAlign: 'center'}}>
+                            <tbody>
+                                <tr>
+                                    <th>Device ID</th>
+                                    <td>{searchDeviceList[0].device_id}</td>
+                                </tr>
+                                <tr>
+                                    <th>Production Number</th>
+                                    <td>{searchDeviceList[0].production_number}</td>
+                                </tr>
+                                <tr>
+                                    <th>Registered By</th>
+                                    <td>{searchDeviceList[0].registered_by.username}</td>
+                                </tr>
+                                <tr>
+                                    <th>Registered On</th>
+                                    <td>{searchDeviceList[0].registered_on}</td>
+                                </tr>
+                                <tr>
+                                    <th>Updated By</th>
+                                    <td>{searchDeviceList[0].updated_by.username}</td>
+                                </tr>
+                                <tr>
+                                    <th>Updated On</th>
+                                    <td>{searchDeviceList[0].updated_on}</td>
+                                </tr>
+                            </tbody>
+                        </Table>
+                        {/* <Row>
                             <Col sm={2}>
                                 <Form.Label>Device ID</Form.Label>
                             </Col>
@@ -368,13 +438,10 @@ export class Search extends Component {
                                 <Form.Label>Updated On</Form.Label>
                                 <p className="form-control">{searchDeviceList[0].updated_on}</p>
                             </Col>
-                        </Row>
+                        </Row> */}
                         <div style={buttonStyle}>
-                            <ButtonToolbar>
-                                <Button variant="primary" onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}> Edit</Button>
-                                <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
-                                
-                            </ButtonToolbar>
+                            <i class="fas fa-edit fa-lg" style={{color: '#07adfa', cursor: 'pointer'}} onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}></i>
+                            <i class="fas fa-trash fa-lg" style={{ color: 'red', marginLeft: '20px', cursor: 'pointer' }} onClick={this.deleteHardware}></i>
                         </div>
                     </React.Fragment>
                 )
@@ -399,14 +466,17 @@ export class Search extends Component {
                                             <td>{device.registered_by.username}</td>
                                             <td>{device.registered_on}</td>
                                             <td> 
-                                                <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More</Button> 
-                                                <Button variant="outline-primary" style={{margin: '5px'}} size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button>
+                                                {/* <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More</Button>  */}
+                                                <i className="fas fa-trash" style={deleteStyle}  onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)} , () => {this.deleteHardware()})}></i>
+                                                {/* <Button style={{ marginLeft: '5px' }} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)} , () => {this.deleteHardware()})}></Button> */}
+                                                <i class="fas fa-edit" style={editStyle} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))} ></i>
+                                                {/* <Button variant="outline-primary" style={{margin: '5px'}} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button> */}
                                             </td>
                                         </tr>    
                                     ))}
                                 </tbody>
                             </Table>
-                            <Modal
+                            {/* <Modal
                             // aria-labelledby="contained-modal-title-vcenter"
                             centered
                             show={this.state.moreInfoModalShow}
@@ -459,8 +529,8 @@ export class Search extends Component {
                                     <Button variant="primary" onClick={() => this.showEditModal() } type="submit">Edit</Button>
                                     <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
                                     {/* <Button variant="outline-danger" onClick={() => this.setState({...this.state, activeDeviceIndex:0, moreInfoModalShow: false })}>Close</Button> */}
-                                </Modal.Footer>
-                            </Modal>
+                                {/* </Modal.Footer> */}
+                            {/* </Modal>  */}
                         </div>
                         {/* {this.state.pagination.count > 10?
                             <div style={{display: 'flex', justifyContent: 'flex-end'}}>

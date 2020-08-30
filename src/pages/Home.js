@@ -84,7 +84,7 @@ class Home extends Component {
     render() {
         return (
             <React.Fragment>
-                <div className="container" style={{ marginTop: '5vh'}}>
+                <div className="container" style={{ marginTop: '7vh'}}>
                     <Row>
                         <Col sm={3} className="margin-card">
                             <HardwareInfo />
@@ -93,14 +93,6 @@ class Home extends Component {
                             <AddHardware />
                         </Col>
                     </Row>
-                    {/* <div className="row">       
-                        <div className="col-sm-auto margin-card">
-                            <HardwareInfo />
-                        </div>
-                        {/* <div className="col-sm-auto margin-card" > */}
-                            {/* <AddHardware /> */}
-                        {/* </div>  */}
-                    {/* </div> */}
                 </div>
             </React.Fragment>
         )

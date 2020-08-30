@@ -8,3 +8,4 @@ export const setAuthCred = (cred) => dispatch => {
         cred
     })
 }
+
