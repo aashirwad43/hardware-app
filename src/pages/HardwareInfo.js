@@ -4,6 +4,8 @@ import CountUp from 'react-countup';
 import today2 from '../assets/images/today2.png';
 import today from '../assets/images/today.png';
 import alltime from '../assets/images/alltime.png';
+import total from '../assets/images/total.png';
+
 
 import {connect} from 'react-redux';
 import { BASE_URL } from '../baseValues';
@@ -80,12 +82,12 @@ export class HardwareInfo extends Component {
                                 <Row>
                                     <Col>
                                         <div style={imageDivStyle}>
-                                            <CardImg src={today2} style={photoStyle}></CardImg>
+                                            <CardImg src={total} style={photoStyle}></CardImg>
                                         </div>
                                     </Col>
                                     <Col>
                                         <h3 style={{textAlign: 'center'}}><CountUp end={this.state.allTime}/></h3>
-                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered Till Date</h6>
+                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered Till Now</h6>
                                     </Col>
                                 </Row>
                             </Card>
@@ -95,7 +97,7 @@ export class HardwareInfo extends Component {
                                 <Row>
                                     <Col>
                                         <div style={imageDivStyle}>
-                                            <CardImg src={alltime} style={photoStyle}></CardImg>
+                                            <CardImg src={today2} style={photoStyle}></CardImg>
                                         </div>
                                     </Col>
                                     <Col>
@@ -117,7 +119,7 @@ export class HardwareInfo extends Component {
                                     </Col>
                                     <Col>
                                         <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeAllTime}/></h3>
-                                        <h6 style={{textAlign: 'center'}}>Devcies Registered By Me All Time</h6>
+                                        <h6 style={{textAlign: 'center'}}>Total Devcies Registered By Me </h6>
                                     </Col>
                                 </Row>
                             </Card> 
