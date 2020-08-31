@@ -162,11 +162,11 @@ class Login extends Component {
                                             <Form onSubmit={this.submitForm}>
                                                 <Form.Group controlId="formBasicUsername">
                                                     <Form.Label>Username</Form.Label>
-                                                    <Form.Control type="text" placeholder="Enter Username" name="username" value={this.state.username} onChange={this.updateUsername} />
+                                                    <Form.Control type="text" placeholder="Enter Username" name="username" value={this.state.username} onChange={this.updateUsername} required />
                                                 </Form.Group>
                                                 <Form.Group controlId="formBasicPassword" >
                                                     <Form.Label>Password</Form.Label>
-                                                    <Form.Control type="password" placeholder="Enter Password" name="password" value={this.state.password} onChange={this.updatePassword} />
+                                                    <Form.Control type="password" placeholder="Enter Password" name="password" value={this.state.password} onChange={this.updatePassword} required />
                                                 </Form.Group>
                                                 <div className="text-center">
                                                     <Button variant="outline-primary" type="submit" className="btn" disabled={ this.state.progress }>
