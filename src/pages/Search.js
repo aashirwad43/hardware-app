@@ -34,7 +34,7 @@ const deleteStyle = {
 
 const editStyle = {
     color: '#07adfa',
-    margin: '15px',
+    marginLeft: '10px',
     cursor: 'pointer'
 };
 
@@ -98,7 +98,8 @@ export class Search extends Component {
                 let xhr = new window.XMLHttpRequest();
                 xhr.upload.addEventListener("progress", function () {
                     swal({
-                        icon:loading
+                        icon:loading,
+                        buttons: false
                     });
                 }, false);
 
@@ -230,7 +231,8 @@ export class Search extends Component {
                     let xhr = new window.XMLHttpRequest();
                     xhr.upload.addEventListener("progress", function () {
                         swal({
-                            icon:loading
+                            icon:loading,
+                            buttons:false
                         });
                     }, false);
 
@@ -310,7 +312,8 @@ export class Search extends Component {
                             let xhr = new window.XMLHttpRequest();
                             xhr.upload.addEventListener("progress", function () {
                                 swal({
-                                    icon:loading
+                                    icon:loading,
+                                    buttons: false
                                 });
                             }, false);
         
@@ -329,6 +332,8 @@ export class Search extends Component {
                             })
                             .then(() => {
                                 if (icon === "success") {
+                                    this.props.updateHardwareInfo();
+                                    
                                     let index = this.getDeviceIndexFromState(device_id);
                                     let { searchDeviceList } = this.state;
 
@@ -403,42 +408,6 @@ export class Search extends Component {
                                 </tr>
                             </tbody>
                         </Table>
-                        {/* <Row>
-                            <Col sm={2}>
-                                <Form.Label>Device ID</Form.Label>
-                            </Col>
-                            <Col >
-                                <p className="form-control">{searchDeviceList[0].device_id}</p>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col sm={2}>
-                                <Form.Label>Production Number</Form.Label>
-                            </Col>
-                            <Col >
-                                <p className="form-control">{searchDeviceList[0].production_number}</p>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <Form.Label>Registered By</Form.Label>
-                                <p className="form-control">{searchDeviceList[0].registered_by.username}</p>
-                            </Col>
-                            <Col>
-                                <Form.Label>Registered On</Form.Label>
-                                <p className="form-control">{searchDeviceList[0].registered_on}</p>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <Form.Label>Updated By</Form.Label>
-                                <p className="form-control">{searchDeviceList[0].updated_by.username}</p>
-                            </Col>
-                            <Col>
-                                <Form.Label>Updated On</Form.Label>
-                                <p className="form-control">{searchDeviceList[0].updated_on}</p>
-                            </Col>
-                        </Row> */}
                         <div style={buttonStyle}>
                             <i class="fas fa-edit fa-lg" style={{color: '#07adfa', cursor: 'pointer'}} onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}></i>
                             <i class="fas fa-trash fa-lg" style={{ color: 'red', marginLeft: '20px', cursor: 'pointer' }} onClick={this.deleteHardware}></i>
@@ -476,69 +445,7 @@ export class Search extends Component {
                                     ))}
                                 </tbody>
                             </Table>
-                            {/* <Modal
-                            // aria-labelledby="contained-modal-title-vcenter"
-                            centered
-                            show={this.state.moreInfoModalShow}
-                            onHide={() => this.setState({...this.state, activeDeviceIndex:0 , moreInfoModalShow: false })}
-                            >
-                                <Modal.Header closeButton>
-                                    <Modal.Title>
-                                        Hardware Details
-                                    </Modal.Title>
-                                </Modal.Header>
-                                <Modal.Body>
-                                    <Row>
-                                        <Col sm={3}>
-                                            <Form.Label>Device ID</Form.Label>
-                                        </Col>
-                                        <Col sm={9}>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].device_id}</p>
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col sm={5}>
-                                            <Form.Label>Production Number</Form.Label>
-                                        </Col>
-                                        <Col sm={7}>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].production_number}</p>
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col>
-                                            <Form.Label>Registered By</Form.Label>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_by.username}</p>
-                                        </Col>
-                                        <Col>
-                                            <Form.Label>Registered On</Form.Label>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].registered_on}</p>
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col>
-                                            <Form.Label>Updated By</Form.Label>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].updated_by.username}</p>
-                                        </Col>
-                                        <Col>
-                                            <Form.Label>Updated On</Form.Label>
-                                            <p className="form-control">{this.state.searchDeviceList[this.state.activeDeviceIndex].updated_on}</p>
-                                        </Col>
-                                    </Row>
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <Button variant="primary" onClick={() => this.showEditModal() } type="submit">Edit</Button>
-                                    <Button variant="danger" style={{ marginLeft: '5px' }} onClick={this.deleteHardware}>Delete</Button>
-                                    {/* <Button variant="outline-danger" onClick={() => this.setState({...this.state, activeDeviceIndex:0, moreInfoModalShow: false })}>Close</Button> */}
-                                {/* </Modal.Footer> */}
-                            {/* </Modal>  */}
                         </div>
-                        {/* {this.state.pagination.count > 10?
-                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                <Button variant="secondary" onClick={ () => this.setState({...this.state, paginationButton: "previous"}, () => {this.getPagination()} )}>Previous</Button>
-                                <Button variant="secondary" style={{marginLeft: '10px'}}  onClick={ () => this.setState({...this.state, paginationButton: "next"}, () => {this.getPagination()} )}>Next</Button>
-                            </div>
-                            : null
-                        } */}
                         <div style={{marginTop:'1rem'}}>
                             <Row>
                                 <Col sm={4}>

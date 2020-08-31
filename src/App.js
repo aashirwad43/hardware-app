@@ -22,14 +22,15 @@ class App extends Component {
   };
 
   componentDidMount() {
-    let reduxState;
+    let localState = JSON.parse(localStorage.getItem('state'));
 
-    store.subscribe(() => {
-      reduxState = store.getState();
-    })
-
-    if (reduxState) {
-      this.setAuth();
+    if (localState) {
+      let expiry = localState.credentials.tokens.expiry;
+      let now = Date.now();
+  
+      if (now < expiry) {
+          this.setAuth();
+      }
     }
   }
   

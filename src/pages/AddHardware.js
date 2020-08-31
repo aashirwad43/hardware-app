@@ -77,7 +77,8 @@ export class AddHardware extends Component {
                     let xhr = new window.XMLHttpRequest();
                     xhr.upload.addEventListener("progress", function () {
                         swal({
-                            icon:loading
+                            icon:loading,
+                            buttons:false
                         });
                     }, false);
 
@@ -86,6 +87,8 @@ export class AddHardware extends Component {
                 data,
                 dataType: 'json',
                 success: (resp) => {
+                    this.props.updateHardwareInfo();
+                    
                     let icon;
 
                     if (resp.status) {
@@ -98,7 +101,6 @@ export class AddHardware extends Component {
                         title: resp.message,
                         icon
                     })
-                    // .then(() => this.setState({ ...this.state, prodNumber: '' }));
                 },
                 error: (resp) => {
                     console.log(resp);
@@ -138,7 +140,8 @@ export class AddHardware extends Component {
                     let xhr = new window.XMLHttpRequest();
                     xhr.upload.addEventListener("progress", function () {
                         swal({
-                            icon:loading
+                            icon:loading,
+                            buttons: false
                         });
                     }, false);
 

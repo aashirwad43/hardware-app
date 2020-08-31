@@ -1,17 +1,12 @@
 import React, { Component } from 'react';
 import { Card, CardImg, Row, Col } from 'react-bootstrap';
+import {connect} from 'react-redux';
+
 import CountUp from 'react-countup';
 import today2 from '../assets/images/today2.png';
 import today from '../assets/images/today.png';
 import alltime from '../assets/images/alltime.png';
 import total from '../assets/images/total.png';
-
-
-import {connect} from 'react-redux';
-import { BASE_URL } from '../baseValues';
-import $ from 'jquery';
-import swal from 'sweetalert';
-
 
 const cardStyle = {
     padding: '10px',
@@ -33,45 +28,6 @@ const imageDivStyle = {
 }
 
 export class HardwareInfo extends Component {
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            allTime: 0,
-            today: 0,
-            byMeToday: 0,
-            byMeAllTime: 0 
-        }
-    }
-
-    componentDidMount() {
-        let accessToken = this.props.accessToken;
-
-        var component = this;
-
-        $.ajax({
-            method: "GET",
-            url: BASE_URL + "/api/hardware/data/misc/",
-            headers: {
-                Authorization: accessToken,
-                'Content-Type': 'application/json'
-            },
-            dataType: 'json',
-            success: function (resp) {
-                component.setState({ ...component.state, allTime: resp.results.device_registered.all_time, today: resp.results.device_registered.today, byMeToday: resp.results.device_registered.by_you.today, byMeAllTime: resp.results.device_registered.by_you.all_time });
-            },
-            error: function (resp) {
-                console.log(resp);
-                swal({
-                    title: "Unable to fetch device data.",
-                    text: "Please try again.",
-                    icon: "warning"
-                });
-            }
-        });
-    };
-
-
     render() {
         return (
             <React.Fragment>
@@ -86,8 +42,8 @@ export class HardwareInfo extends Component {
                                         </div>
                                     </Col>
                                     <Col>
-                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.allTime}/></h3>
-                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered Till Now</h6>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.props.info.all_time}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Total Devices Registered</h6>
                                     </Col>
                                 </Row>
                             </Card>
@@ -101,7 +57,7 @@ export class HardwareInfo extends Component {
                                         </div>
                                     </Col>
                                     <Col>
-                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.today}/></h3>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.props.info.today}/></h3>
                                         <h6 style={{textAlign: 'center'}}>Total Devices Registered Today</h6>
                                     </Col>
                                 </Row>
@@ -118,8 +74,8 @@ export class HardwareInfo extends Component {
                                         </div>
                                     </Col>
                                     <Col>
-                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeAllTime}/></h3>
-                                        <h6 style={{textAlign: 'center'}}>Total Devcies Registered By Me </h6>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.props.info.by_you.all_time}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Total Devices You Registered </h6>
                                     </Col>
                                 </Row>
                             </Card> 
@@ -133,42 +89,13 @@ export class HardwareInfo extends Component {
                                         </div>
                                     </Col>
                                     <Col>
-                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeToday}/></h3>
-                                        <h6 style={{textAlign: 'center'}}>Devices Registered By Me Today</h6>
+                                        <h3 style={{textAlign: 'center'}}><CountUp end={this.props.info.by_you.today}/></h3>
+                                        <h6 style={{textAlign: 'center'}}>Devices You Registered Today</h6>
                                     </Col>
                                 </Row>
                             </Card>
                         </Col>  
                     </Row>
-                    {/* <div className="col">
-                        <div className="row-sm-auto margin-card">
-                            <Card style={cardStyle}>
-                                <div style={imageDivStyle}>
-                                    <CardImg src={today2} style={photoStyle}></CardImg>
-                                </div>
-                                <h3 style={{textAlign: 'center'}}><CountUp end={this.state.allTime}/></h3>
-                                <h6 style={{textAlign: 'center'}}>Total Devices Registered</h6>
-                            </Card>
-                        </div>
-                        <div className="row-sm-auto margin-card">
-                            <Card style={cardStyle}>
-                                <div style={imageDivStyle}>
-                                    <CardImg src={today} style={photoStyle}></CardImg>
-                                </div>
-                                <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeToday}/></h3>
-                                <h6 style={{textAlign: 'center'}}>Devices Registered By Me Today</h6>
-                            </Card>
-                        </div>
-                        <div className="row-sm-auto margin-card">
-                            <Card style={cardStyle}>
-                                <div style={imageDivStyle}>
-                                    <CardImg src={alltime} style={photoStyle}></CardImg>
-                                </div>
-                                <h3 style={{textAlign: 'center'}}><CountUp end={this.state.byMeAllTime}/></h3>
-                                <h6 style={{textAlign: 'center'}}>Registered By Me All Time</h6>
-                            </Card>
-                        </div>
-                    </div> */}
                 </div>
             </React.Fragment>
         )
@@ -176,7 +103,7 @@ export class HardwareInfo extends Component {
 }
 
 const mapStateToProps = state => ({
-    accessToken: state.credentials.tokens.accessToken
+    info: state.hardwareInfo
 })
 
 export default connect(mapStateToProps, {})(HardwareInfo);

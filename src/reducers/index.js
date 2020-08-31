@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { SET_AUTH } from '../actions/types';
+import { SET_AUTH, HARDWARE_INFO } from '../actions/types';
 
 export const defaultCredState = {
     user:{
@@ -13,6 +13,24 @@ export const defaultCredState = {
     }
 }
 
+const defaultHardwareInfoState = {
+    today: 0,
+    all_time: 0,
+    by_you: {
+        today: 0,
+        all_time: 0
+    }
+}
+
+function hardwareInfoReducer(state = defaultHardwareInfoState, action) {
+    switch (action.type) {
+        case HARDWARE_INFO:
+            // console.log(action.cred)
+            return action.info;
+        default:
+            return state;
+    }
+}
 
 
 function credReducer(state = defaultCredState, action) {
@@ -26,5 +44,6 @@ function credReducer(state = defaultCredState, action) {
 }
 
 export default combineReducers({
-    credentials:credReducer
+    credentials: credReducer,
+    hardwareInfo: hardwareInfoReducer
 })

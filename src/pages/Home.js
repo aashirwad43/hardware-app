@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import $ from 'jquery';
+import swal from 'sweetalert';
 
-import { setAuthCred } from '../actions';
+import { setAuthCred, setHardwareInfo } from '../actions';
 import { saveToLocalStorage } from '../localStorage';
 
 import AddHardware from './AddHardware';
@@ -14,7 +15,8 @@ import { Row , Col} from 'react-bootstrap';
 class Home extends Component {
     componentDidMount() {
         this.getUserID();
-        
+        this.getHardwareInfo();
+
         setInterval(() => {
             let { expiry } = this.props.reduxValue.credentials.tokens;
             let now = Date.now();
@@ -54,12 +56,13 @@ class Home extends Component {
 
     getUserID = () => {
         let reduxValue = this.props.reduxValue;
+
+        delete reduxValue.hardwareInfo;
+
         let { accessToken } = reduxValue.credentials.tokens;
         let { username } = reduxValue.credentials.user;
 
-        let data = {
-            username: username
-        };
+        let data = { username };
 
         $.ajax({
             method: "GET",
@@ -81,6 +84,33 @@ class Home extends Component {
         });
     }
 
+    getHardwareInfo = () => {
+        let { accessToken } = this.props.reduxValue.credentials.tokens;
+
+        $.ajax({
+            method: "GET",
+            url: BASE_URL + "/api/hardware/data/misc/",
+            headers: {
+                Authorization: accessToken,
+                'Content-Type': 'application/json'
+            },
+            dataType: 'json',
+            success: resp => {
+                let result = resp.results.device_registered;
+
+                this.props.setHardwareInfo(result);
+            },
+            error: function (resp) {
+                console.log(resp);
+                swal({
+                    title: "Unable to fetch device data.",
+                    // text: "Please try again.",
+                    icon: "warning"
+                });
+            }
+        });
+    }
+
     render() {
         return (
             <React.Fragment>
@@ -90,7 +120,7 @@ class Home extends Component {
                             <HardwareInfo />
                         </Col>
                         <Col sm={9} className="margin-card">
-                            <AddHardware />
+                            <AddHardware updateHardwareInfo={this.getHardwareInfo}/>
                         </Col>
                     </Row>
                 </div>
@@ -103,4 +133,4 @@ const mapStateToProps = state => ({
     reduxValue:state
 })
 
-export default connect(mapStateToProps, { setAuthCred })(Home);
+export default connect(mapStateToProps, { setAuthCred, setHardwareInfo })(Home);
