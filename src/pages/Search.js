@@ -8,7 +8,7 @@ import $ from 'jquery';
 import { BASE_URL } from '../baseValues';
 // import searching from "../assets/images/searching.png";
 import searching from "../assets/images/search.svg";
-import loading from '../assets/images/loading.gif';
+// import loading from '../assets/images/loading.gif';
 
 
 const cardStyle = {
