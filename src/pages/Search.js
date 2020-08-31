@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, InputGroup, Row, Col, Form, Card, Table, Modal, FormControl, Dropdown } from 'react-bootstrap';
+import { Button, InputGroup, Row, Col, Form, Card, Table, Modal, FormControl, Dropdown, Spinner, Toast } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
@@ -28,20 +28,35 @@ const buttonStyle = {
 };
 
 const deleteStyle = {
-    color: 'red',
+    // color: 'red',
     cursor: 'pointer'
 };
 
 const editStyle = {
-    color: '#07adfa',
+    // color: '#07adfa',
     marginLeft: '10px',
     cursor: 'pointer'
 };
 
-export class Search extends Component {
+var timeout;
+
+class Search extends Component {
     constructor(props) {
-        super(props)
+        super(props);
+
         this.state = {
+            toast: {
+                show: false,
+                header: "",
+                status: false,
+                message: ""
+            },
+            progress: {
+                search: false,
+                edit: false,
+                delete: false,
+                deleteDevice: ""
+            },
             editModalShow: false,
             moreInfoModalShow: false,
             productionNumber: "",
@@ -55,7 +70,7 @@ export class Search extends Component {
                 previous: '',
                 totalPage: '',
                 activePage: 1
-            },
+            }
         }
     }
 
@@ -67,8 +82,38 @@ export class Search extends Component {
         this.setState({ ...this.state, registeredDate: e.target.value })
     }
 
-    getHardware = (paginate = null) => {
+    removeToast = () => {
+        let { toast } = this.state;
 
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+
+        timeout = setTimeout(() => {
+            toast.show = false;
+            this.setState({ ...this.state, toast });
+        }, 5 * 1000);   // 5 seconds
+    }
+
+    removeToastImmediate = () => {
+        let { toast } = this.state;
+
+        toast.show=false;
+        this.setState({ ...this.state, toast });
+    }
+
+    putToast = (header, status, message) => {
+        let { toast } = this.state;
+
+        toast.show = true;
+        toast.header = header;
+        toast.status = status;
+        toast.message = message;
+
+        this.setState({ ...this.state, toast }, () => this.removeToast());
+    }
+
+    getHardware = (paginate = null) => {
         let accessToken = this.props.access;
         let { productionNumber, registeredDate, pagination, searchOption } = this.state;
 
@@ -80,12 +125,26 @@ export class Search extends Component {
         } else if (paginate === "prev") {
             url = pagination.previous;
         } else if (searchOption === 'productionNumber') {
-            data = { search: productionNumber }
+            if (productionNumber) {
+                data = { search: productionNumber }
+            } else {
+                this.putToast("Empty Field.", false, "Please Enter Production Number.");
+                return false;
+            }
         } else if (searchOption === 'registeredDate') {
-            data = { registered: registeredDate }
+            if (registeredDate) {
+                data = { registered: registeredDate }
+            } else {
+                this.putToast("Empty Field.", false, "Please Select Registered Date.");
+                return false;
+            }
         } else if (searchOption === 'byMyself') {
             data = { by: this.props.user.id }
         }
+
+        let { progress } = this.state;
+        progress.search = true;
+        this.setState({ ...this.state, progress });
 
         $.ajax({
             method: "GET",
@@ -94,20 +153,12 @@ export class Search extends Component {
                 Authorization: accessToken,
                 'Content-Type': 'application/json'
             },
-            xhr: function () {
-                let xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function () {
-                    swal({
-                        icon:loading,
-                        buttons: false
-                    });
-                }, false);
-
-                return xhr;
-            },
             data,
             dataType: 'json',
             success: (resp) => {
+                progress.search = false;
+                this.setState({ ...this.state, progress });
+
                 if (resp.results.length > 0) {
                     if (resp.count) {
                         pagination.count = resp.count;
@@ -135,19 +186,24 @@ export class Search extends Component {
         
                                 pagination.activePage = previousPage + 1;
                             }
+                        } else {
+                            pagination.activePage = 1;
                         }
                     }
 
                     
                     this.setState({ ...this.state, searchDeviceList: resp.results, pagination});
                 } else {
-                    swal({
-                        title:"No device found.",
-                        icon:"warning"
-                    })
+                    progress.search = false;
+                    this.setState({ ...this.state, progress });
+                    
+                    this.putToast("Search", false, "No Device Found!");
                 }
             },
-            error: function (resp) {
+            error: (resp) => {
+                progress.search = false;
+                this.setState({ ...this.state, progress });
+
                 console.log(resp);
                 let text;
 
@@ -208,6 +264,10 @@ export class Search extends Component {
     }
 
     updateHardwareInfo = () => {
+        let { progress } = this.state;
+        progress.edit = true;
+        this.setState({ ...this.state, progress });
+
         let accessToken = this.props.access;
 
         let { searchDeviceList, activeDeviceIndex } = this.state;
@@ -227,55 +287,30 @@ export class Search extends Component {
                     Authorization: accessToken,
                     'Content-Type': 'application/json'
                 },
-                xhr: function () {
-                    let xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener("progress", function () {
-                        swal({
-                            icon:loading,
-                            buttons:false
-                        });
-                    }, false);
-
-                    return xhr;
-                },
                 data,
                 dataType: 'json',
                 success: (resp) => {
-                    let icon;
-
-                    if (resp.status) {
-                        icon = "success";
-                    } else {
-                        icon = "warning";
-                    }
-
-                    swal({
-                        title: resp.message,
-                        icon
-                    })
-                    // .then(() => this.setState({ ...this.state, productionNumber: ''}));
+                    progress.edit = false;
+                    this.setState({ ...this.state, progress, editModalShow: false });
+                    
+                    this.putToast(`Edit Device ${productionNumber}`, true, resp.message);
                 },
                 error: (resp) => {
                     console.log(resp);
-                    swal({
-                        text: resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.",
-                        icon: "error"
-                    })
-                    // <Card.Img src={searching} style={{ height: '289px', width: '400px' }} />
+                    
+                    progress.edit = false;
+                    this.setState({ ...this.state, progress, editModalShow: false });
+                    
+                    let message = resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.";
+                    this.putToast(`Edit Device ${productionNumber}`, false, message);
                 }
             });
         } else {
-            swal({
-                title: "Please Enter New Production Number.",
-                icon: "warning"
-            })
-            // .then(() => this.setState({ ...this.state, searchDeviceList: [], productionNumber: ''}));
+            this.putToast("Empty Field", false, "Please Enter New Production Number.");
         }
     }
 
-    deleteHardware = (e) => {
-        // e.preventDefault();
-        
+    deleteHardware = () => {
         let accessToken = this.props.access;
         let { searchDeviceList, activeDeviceIndex } = this.state;
         let device_id = searchDeviceList[activeDeviceIndex].device_id;
@@ -301,6 +336,11 @@ export class Search extends Component {
             })
             .then(val => {
                 if (val) {
+                    let { progress } = this.state;
+                    progress.delete = true;
+                    progress.deleteDevice = device_id;
+                    this.setState({ ...this.state, progress });
+                    
                     $.ajax({
                         method: "DELETE",
                         url: BASE_URL + `/api/hardware/${device_id}`,
@@ -308,46 +348,30 @@ export class Search extends Component {
                             Authorization: accessToken,
                             'Content-Type': 'application/json'
                         },
-                        xhr: function () {
-                            let xhr = new window.XMLHttpRequest();
-                            xhr.upload.addEventListener("progress", function () {
-                                swal({
-                                    icon:loading,
-                                    buttons: false
-                                });
-                            }, false);
-        
-                            return xhr;
-                        },
                         success: (resp) => {
-                            let icon;
-                            if (resp.status) {
-                                icon = "success";
-                            } else {
-                                icon = "warning";
-                            }
-                            swal({
-                                title: resp.message,
-                                icon
-                            })
-                            .then(() => {
-                                if (icon === "success") {
-                                    this.props.updateHardwareInfo();
-                                    
-                                    let index = this.getDeviceIndexFromState(device_id);
-                                    let { searchDeviceList } = this.state;
+                            progress.delete = false;
+                            progress.deleteDevice = "";
+                            this.setState({ ...this.state, progress });
 
-                                    searchDeviceList.splice(index, 1);
-                                    this.setState({ ...this.state, searchDeviceList});
-                                }
-                            });
+                            this.props.updateHardwareInfo();
+                                    
+                            let index = this.getDeviceIndexFromState(device_id);
+                            let { searchDeviceList } = this.state;
+
+                            searchDeviceList.splice(index, 1);
+                            this.setState({ ...this.state, searchDeviceList});
+
+                            this.putToast("Delete Device", true, resp.message);
                         },
                         error: (resp) => {
                             console.log(resp);
-                            swal({
-                                title: resp.responseJSON.message ? resp.responseJSON.message : "Something went wrong.",
-                                icon: "error"
-                            })
+
+                            progress.delete = false;
+                            progress.deleteDevice = "";
+                            this.setState({ ...this.state, progress });
+
+                            let message = resp.responseJSON ? resp.responseJSON.message : "Something went wrong.";
+                            this.putToast("Delete Device", false, message);
                         }
                     });
                 }
@@ -356,9 +380,9 @@ export class Search extends Component {
         else {
             swal({
                 title: "Unauthorized",
-                text: "You cannot delete hardware registered by other registrar.",
+                text: "You cannot delete hardware registered by other registrars!",
                 icon: "warning"
-            })
+            });
         }
     }    
 
@@ -371,11 +395,8 @@ export class Search extends Component {
                     <div className="text-center">
                         <img alt="search" src={searching} style={{width: '40%'}} />
                     </div>
-                    {/* <div className="container">
-                        <img alt="search" src={searching} style={{width: '100%'}} />
-                    </div> */}
                 </React.Fragment>
-            )
+            );
         } else {
             if (searchOption === "productionNumber"){
                 return (
@@ -409,16 +430,16 @@ export class Search extends Component {
                             </tbody>
                         </Table>
                         <div style={buttonStyle}>
-                            <i class="fas fa-edit fa-lg" style={{color: '#07adfa', cursor: 'pointer'}} onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}></i>
-                            <i class="fas fa-trash fa-lg" style={{ color: 'red', marginLeft: '20px', cursor: 'pointer' }} onClick={this.deleteHardware}></i>
+                            <Button variant="primary" style={{ marginRight: '10px' }} onClick={ () => { this.setState({ ...this.state, activeDeviceIndex: 0}, () => this.showEditModal()) }}>Edit</Button>
+                            <Button variant="danger" onClick={ this.deleteHardware } disabled={ this.state.progress.delete }>{ this.getDeleteBtnText() }</Button>
                         </div>
                     </React.Fragment>
-                )
+                );
             }
             else  {
-                return(
+                return (
                     <React.Fragment>
-                        <div style={{overflowY:'scroll', height: '25rem'}}>
+                        <div style={{overflowY:'auto', height: '25rem'}}>
                             <Table responsive style={{textAlign: 'center'}}>
                                 <tbody>
                                     <tr>
@@ -434,12 +455,9 @@ export class Search extends Component {
                                             <td>{device.production_number}</td>
                                             <td>{device.registered_by.username}</td>
                                             <td>{device.registered_on}</td>
-                                            <td> 
-                                                {/* <Button variant="outline-primary" size="sm" onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, moreInfoModalShow: true}))}> More</Button>  */}
-                                                <i className="fas fa-trash" style={deleteStyle}  onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)} , () => {this.deleteHardware()})}></i>
-                                                {/* <Button style={{ marginLeft: '5px' }} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)} , () => {this.deleteHardware()})}></Button> */}
-                                                <i class="fas fa-edit" style={editStyle} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))} ></i>
-                                                {/* <Button variant="outline-primary" style={{margin: '5px'}} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))}> Edit </Button> */}
+                                            <td>                             
+                                                { this.getDeleteIcon(device) }
+                                                <i className="fas fa-edit color-blue" style={editStyle} onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)},() => this.setState({...this.state, editModalShow: true}))} ></i>                                                
                                             </td>
                                         </tr>    
                                     ))}
@@ -466,9 +484,8 @@ export class Search extends Component {
                             </Row>
                         </div>
                     </React.Fragment>    
-                )
-            }
-            
+                );
+            }  
         }
     }
 
@@ -528,9 +545,134 @@ export class Search extends Component {
         
     }
 
+    getSearchBtnText = () => {
+        let { progress } = this.state;
+
+        if (progress.search) {
+            return (
+                <React.Fragment>
+                    <div className="vertical-center" style={{ minHeight:0 }}>
+                        <Spinner animation="border" size="sm" as="span" role="status" style={{ marginRight: '5px' }}>
+                            <span className="sr-only">Progress</span>
+                        </Spinner>
+                        ...
+                    </div>
+                </React.Fragment>
+            )
+        } else {
+            return (
+                <React.Fragment>
+                    Search
+                </React.Fragment>
+            )
+        }
+    }
+
+    getEditBtnText = () => {
+        let { progress } = this.state;
+
+        if (progress.edit) {
+            return (
+                <React.Fragment>
+                    <div className="vertical-center" style={{ minHeight:0 }}>
+                        <Spinner animation="border" size="sm" as="span" role="status" style={{ marginRight: '5px' }}>
+                            <span className="sr-only">Progress</span>
+                        </Spinner>
+                        Saving ...
+                    </div>
+                </React.Fragment>
+            )
+        } else {
+            return (
+                <React.Fragment>
+                    Save
+                </React.Fragment>
+            )
+        }
+    }
+
+    getDeleteBtnText = () => {
+        let { progress } = this.state;
+
+        if (progress.delete) {
+            return (
+                <React.Fragment>
+                    <div className="vertical-center" style={{ minHeight:0 }}>
+                        <Spinner animation="border" size="sm" as="span" role="status" style={{ marginRight: '5px' }}>
+                            <span className="sr-only">Progress</span>
+                        </Spinner>
+                        Deleting ...
+                    </div>
+                </React.Fragment>
+            )
+        } else {
+            return (
+                <React.Fragment>
+                    Delete
+                </React.Fragment>
+            )
+        }
+    }
+
+    getToastIconClassName = () => {
+        let { status } = this.state.toast;
+
+        if (status) {
+            return "fas fa-check-circle color-green fa-lg";
+        } else {
+            return "fas fa-times-circle color-danger fa-lg";
+        }
+    }
+
+    getDeleteIcon = (device) => {
+        let { progress } = this.state;
+
+        if (progress.deleteDevice === device.device_id) {
+            return (
+                <React.Fragment>
+                    <Spinner animation="border" variant="danger" size="sm" as="span" role="status" style={{ marginRight: '5px' }}>
+                        <span className="sr-only">Progress</span>
+                    </Spinner>
+                </React.Fragment>
+            )
+        } else {
+            return (
+                <React.Fragment>
+                    <i className="fas fa-trash color-danger" style={deleteStyle}  onClick={() => this.setState({...this.state, activeDeviceIndex: this.getDeviceIndexFromState(device.device_id)} , () => {this.deleteHardware()})}></i>
+                </React.Fragment>
+            )
+        }
+    }
+
     render() {
         return (
             <React.Fragment>
+                <Toast
+                    show={ this.state.toast.show }
+                    style={{
+                        position: 'absolute',
+                        top: '70px',
+                        right: '10px',
+                        borderRadius:'5px',
+                        boxShadow: '0px 0px 5px 2px #999',
+                        zIndex: 2,
+                        height: '110px',
+                        width: '310px',
+                    }}
+                    onClose={() => this.removeToastImmediate()}
+                >
+                    <Toast.Header>
+                        <div className="vertical-center" style={{ minHeight: 0 }}>
+                            <i className={ this.getToastIconClassName() } style={{ marginRight: '5px' }}></i>
+                            <strong className="mr-auto">{ this.state.toast.header }</strong>
+                        </div>
+                    </Toast.Header>
+                    <Toast.Body>
+                        <div className="text-center">
+                            <b>{ this.state.toast.message }</b>
+                        </div>
+                    </Toast.Body>
+                </Toast>
                 <Card style={cardStyle}>
                     <Card.Body>
                         <span onClick={() => { this.setState({ searchDeviceList: [], productionNumber: "", registeredDate: "", searchOption: "productionNumber"}) }}><h3 style={{ textAlign: 'center' }}> Search Hardware </h3></span>
@@ -551,7 +693,7 @@ export class Search extends Component {
                                 </InputGroup.Prepend>
                                 { this.getSearchField() }
                                 <InputGroup.Append>
-                                    <Button variant="primary" type="button" onClick={this.getHardware}>Search</Button>
+                                    <Button variant="primary" type="button" onClick={ this.getHardware } disabled={ this.state.progress.search }>{ this.getSearchBtnText() }</Button>
                                 </InputGroup.Append>
                             </InputGroup>
                         </Form>
@@ -591,7 +733,7 @@ export class Search extends Component {
                         </Modal.Body>
                         <Modal.Footer>
                             {/* <Button variant="danger" onClick={() => this.setState({...this.state, editModalShow: false })}>Close</Button> */}
-                            <Button variant="success" onClick={() => this.updateHardwareInfo()}>Save Changes</Button>
+                            <Button variant="outline-success" onClick={() => this.updateHardwareInfo()} disabled={ this.state.progress.edit }>{ this.getEditBtnText() }</Button>
                         </Modal.Footer>
                     </Form>
                 </Modal>

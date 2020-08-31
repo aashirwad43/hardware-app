@@ -129,7 +129,7 @@ class Login extends Component {
             return (
                 <React.Fragment>
                     <div class="vertical-center" style={{ minHeight: 0 }}>
-                        <Spinner animation="border" role="status" style={{ marginRight: '5px' }}>
+                        <Spinner animation="border" size="sm" as="span" role="status" style={{ marginRight: '5px' }}>
                             <span className="sr-only">Logging</span>
                         </Spinner>
                         Logging You In ...
