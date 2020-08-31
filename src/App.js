@@ -22,9 +22,13 @@ class App extends Component {
   };
 
   componentDidMount() {
-    let localState = JSON.parse(localStorage.getItem('state'));
+    let reduxState;
 
-    if (localState) {
+    store.subscribe(() => {
+      reduxState = store.getState();
+    })
+
+    if (reduxState) {
       this.setAuth();
     }
   }

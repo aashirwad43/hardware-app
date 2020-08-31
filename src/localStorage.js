@@ -4,7 +4,14 @@ export function loadFromLocalStorage() {
         if (serializedState === null) {
             return undefined;
         } else {
-            return JSON.parse(serializedState);
+            let expiry = JSON.parse(serializedState).credentials.tokens.expiry;
+            let now = Date.now();
+
+            if (now > expiry) {
+                return undefined;
+            } else {
+                return JSON.parse(serializedState);
+            }
         }
     }
     catch (e) {
