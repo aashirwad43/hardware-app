@@ -9,6 +9,8 @@ class SearchPage extends Component {
                 <div className="container" style={{ marginTop: '5vh', display: 'flex', justifyContent: 'center' }} >
                     <Search />
                 </div>
+                <br></br>
+                <br></br>
             </React.Fragment>
         )
     }
