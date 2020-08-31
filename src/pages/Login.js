@@ -4,9 +4,8 @@ import { connect } from 'react-redux';
 import { setAuthCred } from '../actions';
 import { saveToLocalStorage } from '../localStorage';
 
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Card, Spinner, Alert } from 'react-bootstrap';
 import $ from 'jquery';
-import swal from 'sweetalert';
 
 import { BASE_URL, APP_KEY, EXPIRY } from '../baseValues';
 import { Layout } from '../components/Layout';
@@ -23,6 +22,8 @@ class Login extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            progress: false,
+            alert: false,
             url: BASE_URL + '/api/auth/token/login/',
             auth: {
                 user: {
@@ -62,6 +63,7 @@ class Login extends Component {
 
     submitForm(e) {
         e.preventDefault();
+        this.setState({ ...this.state, progress: true });
 
         let { auth, password, url } = this.state;
         let { username } = auth.user;
@@ -96,15 +98,52 @@ class Login extends Component {
             },
             error: (resp) => {
                 console.log(resp)
-                swal({
-                    title: "Authentication failed",
-                    icon: "error"
-                });
+                this.setState({ ...this.state, alert: true, progress: false });
             }
         })
     }
 
-    
+    getAlert = () => {
+        let { alert } = this.state;
+
+        if (alert) {
+            // setTimeout(() => this.setState({ ...this.state, alert: false }), 5 * 1000);
+            return (
+                <React.Fragment>
+                    <Alert key={1} variant="danger" onClose={() => this.setState({ ...this.state, alert: false })} dismissible>
+                        <div className="text-center">
+                            <strong>Authentication Failed!</strong>
+                        </div>
+                    </Alert>
+                </React.Fragment>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    getLoginBtnText = () => {
+        let { progress } = this.state;
+
+        if (progress) {
+            return (
+                <React.Fragment>
+                    <div class="vertical-center" style={{ minHeight: 0 }}>
+                        <Spinner animation="border" role="status" style={{ marginRight: '5px' }}>
+                            <span className="sr-only">Logging</span>
+                        </Spinner>
+                        Logging You In ...
+                    </div>
+                </React.Fragment>
+            );
+        } else {
+            return (
+                <React.Fragment>
+                    Login
+                </React.Fragment>
+            );
+        }
+    }
 
     render() {
         return (
@@ -114,24 +153,29 @@ class Login extends Component {
                         <div className="container-fluid">
                             <div className="row justify-content-center">
                                 <div className="col-10 col-sm-6 col-md-6">
-                                    <div className="form-container" style={formStyle}>
-                                        <h3 style={{ textAlign: 'center' }}>LOGIN</h3>
-                                        <br />
-                                        <form onSubmit={this.submitForm}>
-                                            <Form.Group controlId="formBasicUsername">
-                                                <Form.Label>Username</Form.Label>
-                                                <Form.Control type="text" placeholder="Enter Username" name="username" value={this.state.username} onChange={this.updateUsername} />
-                                            </Form.Group>
-                                            <Form.Group controlId="formBasicPassword" >
-                                                <Form.Label>Password</Form.Label>
-                                                <Form.Control type="password" placeholder="Enter Password" name="password" value={this.state.password} onChange={this.updatePassword} />
-                                            </Form.Group>
-                                            <Button variant="success" type="submit" className="btn-block">
-                                                Login
-                                            </Button>
-                                        </form>
-
-                                    </div>
+                                    <Card className="form-container" style={formStyle}>
+                                        <Card.Header>
+                                            <h4 className="text-center">Hardware Registration App</h4>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            { this.getAlert() }
+                                            <Form onSubmit={this.submitForm}>
+                                                <Form.Group controlId="formBasicUsername">
+                                                    <Form.Label>Username</Form.Label>
+                                                    <Form.Control type="text" placeholder="Enter Username" name="username" value={this.state.username} onChange={this.updateUsername} />
+                                                </Form.Group>
+                                                <Form.Group controlId="formBasicPassword" >
+                                                    <Form.Label>Password</Form.Label>
+                                                    <Form.Control type="password" placeholder="Enter Password" name="password" value={this.state.password} onChange={this.updatePassword} />
+                                                </Form.Group>
+                                                <div className="text-center">
+                                                    <Button variant="outline-primary" type="submit" className="btn" disabled={ this.state.progress }>
+                                                        { this.getLoginBtnText() }
+                                                    </Button>
+                                                </div>
+                                            </Form>
+                                        </Card.Body>
+                                    </Card>
                                 </div>
                             </div>
                         </div>
