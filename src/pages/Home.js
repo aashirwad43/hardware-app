@@ -10,9 +10,23 @@ import AddHardware from "./AddHardware";
 import HardwareInfo from "./HardwareInfo";
 
 import { BASE_URL, EXPIRY } from "../baseValues";
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Toast } from "react-bootstrap";
+
+var timeout;
 
 class Home extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      toast: {
+        show: false,
+        header: "",
+        status: false,
+        message: "",
+      },
+    };
+  }
   componentDidMount() {
     this.getUserID();
     this.getHardwareInfo();
@@ -24,7 +38,7 @@ class Home extends Component {
       if (now >= expiry) {
         this.refreshToken();
       }
-    }, 10 * 1000); // Check every 5 minutes
+    }, 60 * 1000); // Check every minute
   }
 
   refreshToken = () => {
@@ -111,16 +125,89 @@ class Home extends Component {
     });
   };
 
+  putToast = (header, status, message) => {
+    let { toast } = this.state;
+
+    toast.show = true;
+    toast.header = header;
+    toast.status = status;
+    toast.message = message;
+
+    this.setState({ ...this.state, toast }, () => this.removeToast());
+  };
+
+  getToastIconClassName = () => {
+    let { status } = this.state.toast;
+
+    if (status) {
+      return "fas fa-check-circle color-green fa-lg";
+    } else {
+      return "fas fa-times-circle color-danger fa-lg";
+    }
+  };
+
+  removeToast = () => {
+    let { toast } = this.state;
+
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      toast.show = false;
+      this.setState({ ...this.state, toast });
+    }, 5 * 1000); // 5 seconds
+  };
+
+  removeToastImmediate = () => {
+    let { toast } = this.state;
+
+    toast.show = false;
+    this.setState({ ...this.state, toast });
+  };
+
   render() {
     return (
       <React.Fragment>
         <div className="container" style={{ marginTop: "7vh" }}>
+          <Toast
+            show={this.state.toast.show}
+            style={{
+              position: "absolute",
+              top: "70px",
+              right: "10px",
+              borderRadius: "5px",
+              boxShadow: "0px 0px 5px 2px #999",
+              zIndex: 2,
+              height: "110px",
+              width: "310px",
+            }}
+            onClose={() => this.removeToastImmediate()}
+          >
+            <Toast.Header>
+              <div className="vertical-center" style={{ minHeight: 0 }}>
+                <i
+                  className={this.getToastIconClassName()}
+                  style={{ marginRight: "5px" }}
+                ></i>
+                <strong className="mr-auto">{this.state.toast.header}</strong>
+              </div>
+            </Toast.Header>
+            <Toast.Body>
+              <div className="text-center">
+                <b>{this.state.toast.message}</b>
+              </div>
+            </Toast.Body>
+          </Toast>
           <Row>
             <Col sm={3} className="margin-card">
               <HardwareInfo />
             </Col>
             <Col sm={9} className="margin-card">
-              <AddHardware updateHardwareInfo={this.getHardwareInfo} />
+              <AddHardware
+                updateHardwareInfo={this.getHardwareInfo}
+                putToast={this.putToast}
+              />
             </Col>
           </Row>
         </div>

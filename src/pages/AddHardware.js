@@ -1,12 +1,5 @@
 import React, { Component } from "react";
-import {
-  Form,
-  Button,
-  InputGroup,
-  Card,
-  Spinner,
-  Toast,
-} from "react-bootstrap";
+import { Form, Button, InputGroup, Card, Spinner } from "react-bootstrap";
 import $ from "jquery";
 import { connect } from "react-redux";
 
@@ -49,8 +42,6 @@ const buttonContainer = {
   justifyContent: "center",
 };
 
-var timeout;
-
 export class AddHardware extends Component {
   constructor(props) {
     super(props);
@@ -60,12 +51,6 @@ export class AddHardware extends Component {
         add: false,
         verify: false,
       },
-      toast: {
-        show: false,
-        header: "",
-        status: false,
-        message: "",
-      },
     };
   }
 
@@ -73,35 +58,8 @@ export class AddHardware extends Component {
     this.setState({ ...this.state, prodNumber: e.target.value });
   };
 
-  removeToast = () => {
-    let { toast } = this.state;
-
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      toast.show = false;
-      this.setState({ ...this.state, toast });
-    }, 5 * 1000); // 5 seconds
-  };
-
-  removeToastImmediate = () => {
-    let { toast } = this.state;
-
-    toast.show = false;
-    this.setState({ ...this.state, toast });
-  };
-
   putToast = (header, status, message) => {
-    let { toast } = this.state;
-
-    toast.show = true;
-    toast.header = header;
-    toast.status = status;
-    toast.message = message;
-
-    this.setState({ ...this.state, toast }, () => this.removeToast());
+    this.props.putToast(header, status, message);
   };
 
   registerHardware = (e) => {
@@ -203,8 +161,8 @@ export class AddHardware extends Component {
           if (resp.status === 404) {
             this.putToast(
               `Verify Device ${prodNumber}`,
-              resp.status,
-              resp.message
+              resp.responseJSON.status,
+              resp.responseJSON.message
             );
           } else {
             swal({
@@ -269,48 +227,9 @@ export class AddHardware extends Component {
     }
   };
 
-  getToastIconClassName = () => {
-    let { status } = this.state.toast;
-
-    if (status) {
-      return "fas fa-check-circle color-green fa-lg";
-    } else {
-      return "fas fa-times-circle color-danger fa-lg";
-    }
-  };
-
   render() {
     return (
       <React.Fragment>
-        <Toast
-          show={this.state.toast.show}
-          style={{
-            position: "absolute",
-            top: "-55px",
-            right: "-45px",
-            borderRadius: "5px",
-            boxShadow: "0px 0px 5px 2px #999",
-            zIndex: 1,
-            height: "110px",
-            width: "310px",
-          }}
-          onClose={() => this.removeToastImmediate()}
-        >
-          <Toast.Header>
-            <div className="vertical-center" style={{ minHeight: 0 }}>
-              <i
-                className={this.getToastIconClassName()}
-                style={{ marginRight: "5px" }}
-              ></i>
-              <strong className="mr-auto">{this.state.toast.header}</strong>
-            </div>
-          </Toast.Header>
-          <Toast.Body>
-            <div className="text-center">
-              <b>{this.state.toast.message}</b>
-            </div>
-          </Toast.Body>
-        </Toast>
         <Card style={cardStyle}>
           <Card.Body>
             <h3

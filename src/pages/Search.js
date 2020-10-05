@@ -639,7 +639,6 @@ class Search extends Component {
             >
               <span className="sr-only">Progress</span>
             </Spinner>
-            ...
           </div>
         </React.Fragment>
       );
