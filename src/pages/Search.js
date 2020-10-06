@@ -758,10 +758,13 @@ class Search extends Component {
           style={{
             position: "fixed",
             top: "70px",
-            right: "10px",
+            right: "0",
+            left: "0",
             borderRadius: "5px",
             boxShadow: "0px 0px 5px 2px #999",
             zIndex: 2,
+            marginLeft: "auto",
+            marginRight: "auto",
             height: "110px",
             width: "310px",
           }}
