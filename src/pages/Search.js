@@ -756,7 +756,7 @@ class Search extends Component {
         <Toast
           show={this.state.toast.show}
           style={{
-            position: "absolute",
+            position: "fixed",
             top: "70px",
             right: "10px",
             borderRadius: "5px",
