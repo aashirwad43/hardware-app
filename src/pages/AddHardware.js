@@ -17,9 +17,9 @@ const cardStyle = {
   boxShadow: "0px 0px 10px 0px #000",
   // width: '40rem',
   // height: '34rem',
-  marginLeft: "1rem",
-  marginRight: "1rem",
-  marginTop: "0.8rem",
+  // marginLeft: "1rem",
+  // marginRight: "1rem",
+  // marginTop: "0.8rem",
 };
 
 // const containerStyle = {
@@ -243,7 +243,7 @@ export class AddHardware extends Component {
               <img
                 alt="addhardware"
                 src={hardwareRegister}
-                style={{ width: "72%" }}
+                style={{ width: "70%" }}
               />
             </div>
             <br />

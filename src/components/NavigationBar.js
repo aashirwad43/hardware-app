@@ -61,17 +61,14 @@ class NavigationBar extends Component {
   render() {
     return (
       <Styles>
-        <Navbar expand="lg" className="bg-dark ">
+        <Navbar expand="lg" bg="dark" variant="dark" collapseOnSelect>
           <Container>
             <Navbar.Brand onClick={() => this.props.setMode("home")}>
               Hardware Registration App
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse
-              id="basic-navbar-nav"
-              className="justify-content-sm-between"
-            >
-              <Nav className="nav">
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav className="mr-auto nav">
                 <Nav.Link
                   className={this.props.mode === "home" ? "active" : null}
                   onClick={() => this.props.setMode("home")}

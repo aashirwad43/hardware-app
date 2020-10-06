@@ -225,16 +225,9 @@ class Search extends Component {
         this.setState({ ...this.state, progress });
 
         console.log(resp);
-        let text;
-
-        try {
-          text = resp.responseJSON.message
-            ? resp.responseJSON.message
-            : "Something went wrong.";
-        } catch (e) {
-          console.log(e);
-          text = "Something went wrong.";
-        }
+        let text = resp.responseJSON
+          ? resp.responseJSON.message
+          : "Something went wrong.";
 
         swal({
           text,
@@ -325,7 +318,7 @@ class Search extends Component {
           progress.edit = false;
           this.setState({ ...this.state, progress, editModalShow: false });
 
-          let message = resp.responseJSON.message
+          let message = resp.responseJSON
             ? resp.responseJSON.message
             : "Something went wrong.";
           this.putToast(`Edit Device ${productionNumber}`, false, message);

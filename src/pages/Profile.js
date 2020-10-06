@@ -482,7 +482,7 @@ class Profile extends Component {
                                 placeholder="Enter Email Address"
                                 aria-label="Email"
                                 aria-describedby="basic-addon1"
-                                required
+                                // required
                                 type="email"
                                 value={this.state.userInfo.email}
                                 onChange={this.newEmail}
