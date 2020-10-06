@@ -200,10 +200,10 @@ class Home extends Component {
             </Toast.Body>
           </Toast>
           <Row>
-            <Col sm={3} className="margin-card">
+            <Col sm={4} className="margin-card">
               <HardwareInfo />
             </Col>
-            <Col sm={9} className="margin-card">
+            <Col sm={8} className="margin-card">
               <AddHardware
                 updateHardwareInfo={this.getHardwareInfo}
                 putToast={this.putToast}
