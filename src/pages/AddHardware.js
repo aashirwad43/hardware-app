@@ -6,6 +6,7 @@ import {
   Card,
   Spinner,
   Toast,
+  Modal,
 } from "react-bootstrap";
 import $ from "jquery";
 import { connect } from "react-redux";
@@ -16,7 +17,7 @@ import hardwareRegister from "../assets/images/addhardware.svg";
 
 import swal from "sweetalert";
 
-// import loading from '../assets/images/loading.gif';
+import Qrcode from "./Qrcode";
 
 const cardStyle = {
   padding: "10px",
@@ -66,6 +67,7 @@ export class AddHardware extends Component {
         status: false,
         message: "",
       },
+      // qrcodeModalShow: false,
     };
   }
 
@@ -132,13 +134,13 @@ export class AddHardware extends Component {
           this.props.updateHardwareInfo();
 
           progress.add = false;
-          this.setState({ ...this.state, progress });
+          this.setState({ ...this.state, progress, qrcodeModalShow: true });
 
-          this.putToast(
-            `Register Device ${prodNumber}`,
-            resp.status,
-            resp.message
-          );
+          //   this.putToast(
+          //     `Register Device ${prodNumber}`,
+          //     resp.status,
+          //     resp.message
+          //   );
         },
         error: (resp) => {
           console.log(resp);
@@ -361,6 +363,15 @@ export class AddHardware extends Component {
                 </Button>
               </div>
             </Form>
+            {/* <Modal
+              aria-labelledby="conatined-modal-title-vcenter"
+              centered
+              show={this.state.qrcodeModalShow}
+            >
+              <Modal.Body>
+                <Qrcode />
+              </Modal.Body>
+            </Modal> */}
           </Card.Body>
         </Card>
       </React.Fragment>
