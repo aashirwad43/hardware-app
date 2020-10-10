@@ -9,7 +9,6 @@ import NavigationBar from "./components/NavigationBar";
 
 import store from "./store";
 import SearchPage from "./pages/SearchPage";
-import Qrcode from "./pages/Qrcode";
 
 const defaultState = {
   authenticated: false,
@@ -51,13 +50,11 @@ class App extends Component {
       returnComponent = <SearchPage />;
     } else if (mode === "profile") {
       returnComponent = <Profile />;
-    } else if (mode === "qrcode") {
-      returnComponent = <Qrcode />;
     }
 
     return (
       <React.Fragment>
-        <NavigationBar setMode={this.setMode} />
+        <NavigationBar setMode={this.setMode} mode={this.state.mode} />
         {returnComponent}
       </React.Fragment>
     );

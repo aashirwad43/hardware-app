@@ -16,12 +16,19 @@ const Styles = styled.div`
   }
 
   .nav .nav-link {
+    margin: 0 10px;
     text-decoration: "none";
     color: #ffffff;
 
     &:hover {
       color: #6ba2fa;
     }
+  }
+
+  .nav .active {
+    border-bottom: 1px solid #ffffe6;
+    border-bottom-width: 3px;
+    color: #ffffff !important;
   }
 
   .nav-link:focus {
@@ -54,26 +61,26 @@ class NavigationBar extends Component {
   render() {
     return (
       <Styles>
-        <Navbar expand="lg" className="bg-dark ">
+        <Navbar expand="lg" bg="dark" variant="dark" collapseOnSelect>
           <Container>
             <Navbar.Brand onClick={() => this.props.setMode("home")}>
               Hardware Registration App
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse
-              id="basic-navbar-nav"
-              className="justify-content-sm-between"
-            >
-              <Nav className="nav">
-                <Nav.Link onClick={() => this.props.setMode("home")}>
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav className="mr-auto nav">
+                <Nav.Link
+                  className={this.props.mode === "home" ? "active" : null}
+                  onClick={() => this.props.setMode("home")}
+                >
                   <i className="fas fa-home"></i> Home
                 </Nav.Link>
-                <Nav.Link onClick={() => this.props.setMode("search")}>
+                <Nav.Link
+                  className={this.props.mode === "search" ? "active" : null}
+                  onClick={() => this.props.setMode("search")}
+                >
                   <i className="fas fa-search"></i> Search
                 </Nav.Link>
-                {/* <Nav.Link onClick={() => this.props.setMode("qrcode")}>
-                  <i className="fas fa-search"></i> Search
-                </Nav.Link> */}
               </Nav>
               <NavDropdown
                 className="nav"
@@ -98,9 +105,4 @@ class NavigationBar extends Component {
   }
 }
 
-// const mapStateToProps = state => ({
-//     username:state.credentials.user.username
-// })
-
-// export default connect(mapStateToProps, {})(NavigationBar);
 export default NavigationBar;

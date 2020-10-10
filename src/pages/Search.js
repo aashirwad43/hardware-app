@@ -225,16 +225,9 @@ class Search extends Component {
         this.setState({ ...this.state, progress });
 
         console.log(resp);
-        let text;
-
-        try {
-          text = resp.responseJSON.message
-            ? resp.responseJSON.message
-            : "Something went wrong.";
-        } catch (e) {
-          console.log(e);
-          text = "Something went wrong.";
-        }
+        let text = resp.responseJSON
+          ? resp.responseJSON.message
+          : "Something went wrong.";
 
         swal({
           text,
@@ -325,7 +318,7 @@ class Search extends Component {
           progress.edit = false;
           this.setState({ ...this.state, progress, editModalShow: false });
 
-          let message = resp.responseJSON.message
+          let message = resp.responseJSON
             ? resp.responseJSON.message
             : "Something went wrong.";
           this.putToast(`Edit Device ${productionNumber}`, false, message);
@@ -639,7 +632,6 @@ class Search extends Component {
             >
               <span className="sr-only">Progress</span>
             </Spinner>
-            ...
           </div>
         </React.Fragment>
       );
@@ -757,12 +749,15 @@ class Search extends Component {
         <Toast
           show={this.state.toast.show}
           style={{
-            position: "absolute",
+            position: "fixed",
             top: "70px",
-            right: "10px",
+            right: "0",
+            left: "0",
             borderRadius: "5px",
             boxShadow: "0px 0px 5px 2px #999",
             zIndex: 2,
+            marginLeft: "auto",
+            marginRight: "auto",
             height: "110px",
             width: "310px",
           }}
