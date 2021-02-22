@@ -1,5 +1,5 @@
-export const BASE_URL = "https://satshree.pythonanywhere.com";
-export const APP_KEY = "6117160db3031c067ae97f06a216ebb4c64f9a978956e63c75f19c824f8b59e8a92c038d2ec9e5b5c1d6ee023212b6f26a8ceb07954cec05e902d278a7b6cf1a";
+export const BASE_URL = "https://bike-tracker-nepal.herokuapp.com";
+export const APP_KEY = "18cb3006db036243b55133a99f8175f327e9e283aa9071aff17850523c81b2a6e814eb3d0a9989dcf728f4f0625fae29816fd4093a6b0de08087731510a1b02c";
 export const EXPIRY = () => {
     let expiryTime = new Date(Date.now() + (15 * 60000)).getTime(); // 15 Minutes
     return expiryTime;

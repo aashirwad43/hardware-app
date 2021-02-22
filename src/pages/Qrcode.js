@@ -1,43 +1,23 @@
 import React from "react";
 import { useQRCode } from "react-qrcodes";
-import { Modal } from "react-bootstrap";
 
-function Qrcode() {
+function Qrcode(props) {
+  var deviceId = props.deviceId;
   const [inputRef] = useQRCode({
-    text: "hello world",
+    text: deviceId,
     options: {
       level: "M",
       margin: 7,
       scale: 1,
       width: 200,
       color: {
-        dark: "#010599FF",
-        light: "#FFBF60FF",
+        dark: "#000",
+        light: "#FFF",
       },
     },
   });
 
-  return (
-    <canvas ref={inputRef} />
-
-    // <Modal
-    //   aria-labelledby="conatined-modal-title-vcenter"
-    //   centered
-    //   //   show={this.state.qrcodeModalShow}
-    // >
-    //   <Modal.Header
-    //     closeButton
-    //     // onClick={() => this.setState({ ...this.state, qrcodeModalShow: false })}
-    //   >
-    //     <Modal.Title id="contained-modal-title-vcenter">
-    //       Device Successfully Registered
-    //     </Modal.Title>
-    //   </Modal.Header>
-    //   <Modal.Body>
-    //     <canvas ref={inputRef} />
-    //   </Modal.Body>
-    // </Modal>
-  );
+  return <canvas ref={inputRef} />;
 }
 
 export default Qrcode;

@@ -12,6 +12,8 @@ import {
   Dropdown,
   Spinner,
   Toast,
+  Tooltip,
+  OverlayTrigger,
 } from "react-bootstrap";
 import { connect } from "react-redux";
 import swal from "sweetalert";
@@ -22,6 +24,8 @@ import { BASE_URL } from "../baseValues";
 // import searching from "../assets/images/searching.png";
 import searching from "../assets/images/search.svg";
 // import loading from '../assets/images/loading.gif';
+
+import Qrcode from "./Qrcode";
 
 const cardStyle = {
   padding: "10px",
@@ -49,6 +53,12 @@ const editStyle = {
 
 var timeout;
 
+const renderTooltip = (props) => (
+  <Tooltip id="button-tooltip" {...props}>
+    Click to generate Qr code.
+  </Tooltip>
+);
+
 class Search extends Component {
   constructor(props) {
     super(props);
@@ -66,6 +76,7 @@ class Search extends Component {
         delete: false,
         deleteDevice: "",
       },
+      qrcodeModalShow: false,
       editModalShow: false,
       moreInfoModalShow: false,
       productionNumber: "",
@@ -430,7 +441,20 @@ class Search extends Component {
               <tbody>
                 <tr>
                   <th>Device ID</th>
-                  <td>{searchDeviceList[0].device_id}</td>
+                  <OverlayTrigger
+                    placement="right"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={renderTooltip}
+                  >
+                    <a
+                      onClick={() =>
+                        this.setState({ ...this.state, qrcodeModalShow: true })
+                      }
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td>{searchDeviceList[0].device_id}</td>
+                    </a>
+                  </OverlayTrigger>
                 </tr>
                 <tr>
                   <th>Production Number</th>
@@ -453,6 +477,50 @@ class Search extends Component {
                   <td>{searchDeviceList[0].updated_on}</td>
                 </tr>
               </tbody>
+              <Modal
+                aria-labelledby="conatined-modal-title-vcenter"
+                centered
+                show={this.state.qrcodeModalShow}
+              >
+                <Modal.Header
+                  closeButton
+                  onClick={() => this.setState({ qrcodeModalShow: false })}
+                >
+                  <Modal.Title id="contained-modal-title-vcenter">
+                    QR Code
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <Row>
+                    <Col>
+                      <Qrcode deviceId={searchDeviceList[0].device_id} />
+                    </Col>
+                    <Col>
+                      <div>
+                        <Table responsive style={{ textAlign: "center" }}>
+                          <tbody>
+                            <tr>
+                              <th>Device ID</th>
+                              <td>{searchDeviceList[0].device_id}</td>
+                            </tr>
+                            <tr>
+                              <th>Production Number</th>
+                              <td>{searchDeviceList[0].production_number}</td>
+                            </tr>
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    onClick={() => this.setState({ qrcodeModalShow: false })}
+                  >
+                    Close
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </Table>
             <div style={buttonStyle}>
               <Button
@@ -491,7 +559,23 @@ class Search extends Component {
                   </tr>
                   {searchDeviceList.map((device) => (
                     <tr key={device.device_id}>
-                      <td>{device.device_id}</td>
+                      <OverlayTrigger
+                        placement="right"
+                        delay={{ show: 250, hide: 400 }}
+                        overlay={renderTooltip}
+                      >
+                        <a
+                          onClick={() =>
+                            this.setState({
+                              ...this.state,
+                              qrcodeModalShow: true,
+                            })
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td>{device.device_id}</td>
+                        </a>
+                      </OverlayTrigger>
                       <td>{device.production_number}</td>
                       <td>{device.registered_by.username}</td>
                       <td>{device.registered_on}</td>
@@ -508,11 +592,12 @@ class Search extends Component {
                                   device.device_id
                                 ),
                               },
-                              () =>
-                                this.setState({
-                                  ...this.state,
-                                  editModalShow: true,
-                                })
+                              () => this.showEditModal()
+                              // () =>
+                              //   this.setState({
+                              //     ...this.state,
+                              //     editModalShow: true,
+                              //   })
                             )
                           }
                         ></i>
@@ -896,6 +981,51 @@ class Search extends Component {
             </Modal.Footer>
           </Form>
         </Modal>
+
+        {/* <Modal
+          aria-labelledby="conatined-modal-title-vcenter"
+          centered
+          show={this.state.qrcodeModalShow}
+        >
+          <Modal.Header
+            closeButton
+            onClick={() => this.setState({ qrcodeModalShow: false })}
+          >
+            <Modal.Title id="contained-modal-title-vcenter">
+              QR Code
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Row>
+              <Col>
+                <Qrcode deviceId={searchDeviceList[0].device_id} />
+              </Col>
+              <Col>
+                <div>
+                  <Table responsive style={{ textAlign: "center" }}>
+                    <tbody>
+                      <tr>
+                        <th>Device ID</th>
+                        <td>{searchDeviceList[0].device_id}</td>
+                      </tr>
+                      <tr>
+                        <th>Production Number</th>
+                        <td>{searchDeviceList[0].production_number}</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </div>
+              </Col>
+            </Row>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success">Download</Button>
+            <Button onClick={() => this.setState({ qrcodeModalShow: false })}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal> */}
+        ;
       </React.Fragment>
     );
   }

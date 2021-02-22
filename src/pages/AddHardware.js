@@ -1,5 +1,13 @@
 import React, { Component } from "react";
-import { Form, Button, InputGroup, Card, Spinner } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  InputGroup,
+  Card,
+  Spinner,
+  // Tooltip,
+  // OverlayTrigger,
+} from "react-bootstrap";
 import $ from "jquery";
 import { connect } from "react-redux";
 
@@ -8,8 +16,6 @@ import { BASE_URL } from "../baseValues";
 import hardwareRegister from "../assets/images/addhardware.svg";
 
 import swal from "sweetalert";
-
-import Qrcode from "./Qrcode";
 
 const cardStyle = {
   padding: "10px",
@@ -41,6 +47,16 @@ const buttonContainer = {
   display: "flex",
   justifyContent: "center",
 };
+
+// const renderTooltip = (props) => (
+//   <Tooltip id="button-tooltip" {...props}>
+//     Toggle switch "on" to download Qr code on register.
+//   </Tooltip>
+// );
+
+// const productionNumber = () => {
+//   const [productionNumber, setProductionNumber] = useState(new Array(6).fill(""))
+// }
 
 export class AddHardware extends Component {
   constructor(props) {
@@ -90,13 +106,13 @@ export class AddHardware extends Component {
           this.props.updateHardwareInfo();
 
           progress.add = false;
-          this.setState({ ...this.state, progress, qrcodeModalShow: true });
+          this.setState({ ...this.state, progress });
 
-          //   this.putToast(
-          //     `Register Device ${prodNumber}`,
-          //     resp.status,
-          //     resp.message
-          //   );
+          this.putToast(
+            `Register Device ${prodNumber}`,
+            resp.status,
+            resp.message
+          );
         },
         error: (resp) => {
           console.log(resp);
@@ -248,6 +264,23 @@ export class AddHardware extends Component {
             </div>
             <br />
             <Form>
+
+              {/* {
+                productionNumber.map((data, index) => {
+                    return (
+                      <input
+                        className="productionNumber"
+                        type="number"
+                        name="productionNumber"
+                        maxLength="1"
+                        key={index}
+                        value={this.state.prodNumber}
+                        onChange={this.updateProductionNumber}
+                      />
+                    );
+                })
+              } */}
+
               <InputGroup className="mb-3">
                 <InputGroup.Prepend>
                   <InputGroup.Text id="basic-addon1">
@@ -278,17 +311,23 @@ export class AddHardware extends Component {
                 >
                   {this.getVerifyBtnText()}
                 </Button>
+                {/* <OverlayTrigger
+                  placement="bottom"
+                  delay={{ show: 250, hide: 400 }}
+                  overlay={renderTooltip}
+                >
+                  <div
+                    style={{
+                      marginTop: "7px",
+                      position: "absolute",
+                      right: "35px",
+                    }}
+                  >
+                    <Form.Check type="switch" id="custom-switch" label="QR" />
+                  </div>
+                </OverlayTrigger> */}
               </div>
             </Form>
-            {/* <Modal
-              aria-labelledby="conatined-modal-title-vcenter"
-              centered
-              show={this.state.qrcodeModalShow}
-            >
-              <Modal.Body>
-                <Qrcode />
-              </Modal.Body>
-            </Modal> */}
           </Card.Body>
         </Card>
       </React.Fragment>
