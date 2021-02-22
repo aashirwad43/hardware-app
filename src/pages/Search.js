@@ -1025,7 +1025,6 @@ class Search extends Component {
             </Button>
           </Modal.Footer>
         </Modal> */}
-        ;
       </React.Fragment>
     );
   }
