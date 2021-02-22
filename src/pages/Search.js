@@ -446,14 +446,14 @@ class Search extends Component {
                     delay={{ show: 250, hide: 400 }}
                     overlay={renderTooltip}
                   >
-                    <a
+                    <span
                       onClick={() =>
                         this.setState({ ...this.state, qrcodeModalShow: true })
                       }
                       style={{ cursor: "pointer" }}
                     >
                       <td>{searchDeviceList[0].device_id}</td>
-                    </a>
+                    </span>
                   </OverlayTrigger>
                 </tr>
                 <tr>
@@ -564,7 +564,7 @@ class Search extends Component {
                         delay={{ show: 250, hide: 400 }}
                         overlay={renderTooltip}
                       >
-                        <a
+                        <span
                           onClick={() =>
                             this.setState({
                               ...this.state,
@@ -574,7 +574,7 @@ class Search extends Component {
                           style={{ cursor: "pointer" }}
                         >
                           <td>{device.device_id}</td>
-                        </a>
+                        </span>
                       </OverlayTrigger>
                       <td>{device.production_number}</td>
                       <td>{device.registered_by.username}</td>
@@ -638,7 +638,7 @@ class Search extends Component {
                 </Col>
               </Row>
             </div>
-          </React.Fragment>
+          </React.Fragment >
         );
       }
     }
